@@ -70,8 +70,12 @@ void assignMembership(carMembershipDetails [], ifstream &, int &);
 void displayCarMembershipDetails(carMembershipDetails [], int);
 void addVehicle(carDetails [], string [][20], int &);
 void assignActiveCarParkingLot(carDetails [], string [][20], int );
-void removeVehicles(carDetails [], string [][20], int &);
-void removeFromParkingLot(string, string [][20]);
+void removeVehicles(carDetails [], string[][20], int &, carDetails [], int &);void removeFromParkingLot(string, string [][20]);
+void addExitedVehicles(carDetails [], carDetails , int &);
+int calculateDuration(int, int);
+
+
+
 
 int main() {
     ifstream inCar("active car.txt");
@@ -107,6 +111,9 @@ int main() {
         {"DIAMOND", 0.15}
     };
 
+    carDetails exitedVehicles[200];
+    int exitedVehicleCount = 0;
+
     //assign all the current memberships inside the membership file into membershipArray.
     carMembershipDetails carMembershipDetails[200];
     int membershipCount = 0;
@@ -137,7 +144,7 @@ int main() {
                     break;
 
                 case 2:
-                    removeVehicles(activeCars, parkingLot, activeCarsCount);
+                    removeVehicles(activeCars, parkingLot, activeCarsCount, exitedVehicles, exitedVehicleCount);
                     break;
 
                 case 5:
@@ -146,12 +153,20 @@ int main() {
 
                 default:
                     cout << "Invalid option.\n";
-                    continue;
+                    break;
             }
             
         
         }
 
+        cout << "\n\nCURRENT EXITED CAR: \n\n";
+        cout << "number of exited vehicles: " << exitedVehicleCount << endl;
+        for (int i = 0; i < exitedVehicleCount; i++)  {
+            cout << exitedVehicles[i].plateNo << endl;
+            cout << exitedVehicles[i].entryTime<< endl;
+            cout << exitedVehicles[i].exitTime << endl;
+            cout << exitedVehicles[i].duration << endl;
+        }
 }
 
 
@@ -246,7 +261,7 @@ void removeFromParkingLot(string plateNo, string parkingLot[][20]) {
     }
 }
 
-void removeVehicles(carDetails activeCars[], string parkingLot[][20], int &activeCarsCount) {
+void removeVehicles(carDetails activeCars[], string parkingLot[][20], int &activeCarsCount, carDetails exitedVehicles[], int &exitedVehicleCount) {
     string exitVehiclePlate;
     cout << "No Plate To Remove: ";
     getline(cin >> ws, exitVehiclePlate);
@@ -271,6 +286,8 @@ void removeVehicles(carDetails activeCars[], string parkingLot[][20], int &activ
 
     removeFromParkingLot(exitVehiclePlate, parkingLot);
 
+    addExitedVehicles(exitedVehicles, activeCars[targetIndex], exitedVehicleCount);
+
     // Shift elements to the left to overwrite the target
     for (int i = targetIndex; i < activeCarsCount - 1; i++) {
         activeCars[i] = activeCars[i + 1];
@@ -280,4 +297,28 @@ void removeVehicles(carDetails activeCars[], string parkingLot[][20], int &activ
     cout << "Vehicle successfully exited" << endl;
 }
 
+void addExitedVehicles(carDetails exitedVehicles[], carDetails exitingCars, int &exitedVehicleCount) {
+    int exitTime;
+    cout << "Enter Exit Time for current vehicle: ";
+    cin >> exitTime;
+    if (exitTime < exitedVehicles[exitedVehicleCount].entryTime) {
+        cout << "Invalid exit time. please retry" << endl;
+        return;
+    }
 
+    exitedVehicles[exitedVehicleCount].plateNo = exitingCars.plateNo;  
+    exitedVehicles[exitedVehicleCount].entryTime = exitingCars.entryTime;  
+    exitedVehicles[exitedVehicleCount].exitTime = exitTime; 
+    //exitedVehicles[exitedVehicleCount].duration = calculateDuration();  
+    exitedVehicles[exitedVehicleCount].duration = calculateDuration(exitingCars.entryTime, exitTime);  
+    
+    exitedVehicleCount++;
+}
+
+
+int calculateDuration(int entryTime, int exitTime){
+    int startMinutes = ((entryTime / 100) * 60) + (entryTime % 100);
+    int endMinutes = ((exitTime / 100) * 60) + (exitTime % 100);
+
+    return endMinutes - startMinutes;
+}
