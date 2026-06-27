@@ -1,0 +1,109 @@
+suppose the parking lot have to be emptied before midnight, car can only stay less than 24 hours
+
+carDetails {
+	string plateNo
+	
+	int entryTime
+	int exitTime
+	int duration	
+	
+	double parkingFee;
+    	double discount;
+    	double finalFee;
+
+    	bool isMember;
+    	string memberLevel;
+	
+	int parkingRow; //assigned at the time of addition into the file.
+	int parkingColumn;
+
+	void getData(&inCar) {
+		getLine(inCar, plateNo, ';');
+		....
+	}
+}
+
+carMembershipDetails {
+    string plateNo
+    string ownerName;
+
+    string memberLevel
+}
+
+membershipDetails {
+    string memberLevel
+    double discountrate;
+}
+
+
+
+PESEUDOCODE
+Get from file active car
+declare struct carDetails amd declare method untuk getData and displayData.
+declare struct membership and declare method untuk getData and displayData.
+kita buat struct member untuk tgk car yang dah ada tu wujud ke dekat dalam member
+	
+
+
+decalre 1d array of activeCars[60] max 60 car;
+declare 2d array parkingLot[10][20] 20 row, 10 columns of parking stores only plateNo
+declare 1d array membership[60] 60 max car;
+Assign all the active car into 2d array parkingLot and all the membership into membership array.
+int carCount = 0; //nanti kalau function addCar kita akan increase carCount also
+int memberCount = 0 ; //sama jugak
+
+//initialize all parking lot to be nothing
+for(int r = 0; r < 10; r++)
+{
+    for(int c = 0; c < 20; c++)
+    {
+        parkingLot[r][c] = "";
+    }
+}
+
+
+
+while (!inMember.eof()) {
+	membership[memberCount]
+	memberCount++;
+}
+
+//put the car in their respective parking spots
+for(int i = 0; i < carCount; i++) {
+    parkingLot[activeCar.row][activecar.column] = activeCar[i].plateNo
+}
+//===========END OF INPUT===============
+
+
+
+
+
+
+
+
+
+
+
+Functions-
+1. declare method untuk baca each respective file
+
+1. declare method untuk addCar(cars activeCars[], parkingLot) {
+    
+}
+2. declare method untuk removeCar(carDetails, )
+
+
+
+void getCarData(carDetails activeCars, &inCar) {
+    while (!inCar.eof()) {
+	activeCar[][].getData()
+	carCount++;
+    }
+}
+
+void getMemberData(membership member)
+
+
+
+at the beginning of file, we dont know when the exit time of active vehicle is. we calculate when the exitVehicle is called.
+then, we will print all of it inside active car, replacing the old active car with new active car upon end of day.
