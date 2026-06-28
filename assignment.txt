@@ -111,3 +111,4 @@ then, we will print all of it inside active car, replacing the old active car wi
 //at the start of file, we will ask the time and/or date. and at the end of fle we will ask for the end of file also.
 
 the active vehicle inside the active vehicle file is all the vehicle that has exeeced 24 hours. each day will be awarded 1 penalty points. each penalty points costs rm10
+that means on report, if there are any active vehicles, they have exeeceded the 24 hours.

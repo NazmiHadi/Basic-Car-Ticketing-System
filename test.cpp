@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
+#include <string>
 
 using namespace std;
 
@@ -132,7 +133,12 @@ int main() {
 
             int input;
             cout << "Enter thee input ";
-            cin >> input;
+            if (!(cin >> input)) {
+                cout << "Invalid input" << endl;
+                cin.clear();
+                cin.ignore();
+                continue;
+            }
 
             if (input == 7) {
                 break;
@@ -167,7 +173,12 @@ int main() {
             cout << exitedVehicles[i].exitTime << endl;
             cout << exitedVehicles[i].duration << endl;
         }
-}
+
+        cout << "\n\nCURRENT ACTIVE CAR\n\n";
+        for (int i = 0; i < activeCarsCount; i++) {
+            activeCars[i].displayData();
+        }
+    }
 
 
 void inputCars(carDetails activeCars[], ifstream &inCar, int &activeCarsCount) {

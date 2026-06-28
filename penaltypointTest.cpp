@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
+#include <string>
 
 using namespace std;
 
@@ -22,7 +23,7 @@ struct carDetails {
     int parkingColumn;
     int parkingRow;
 
-    int penaltyPoint = 0;
+    int penaltyPoints = 0;
 
     void getData(ifstream &inCar) {
         getline(inCar >> ws, plateNo, ';');
@@ -32,11 +33,14 @@ struct carDetails {
         inCar.ignore();
         inCar >> parkingColumn;
         inCar.ignore();
+        inCar >> penaltyPoints;
+        inCar.ignore();
     }
 
     void displayData() {
         cout << plateNo << endl;
         cout << entryTime << endl;
+        cout << penaltyPoints << endl;
     }
 };
 
@@ -60,6 +64,7 @@ struct carMembershipDetails {
 
 struct membershipDetails {
     string memberLevel;
+    double memberPrice;
     double disountRate;
 };
 
@@ -75,6 +80,7 @@ void assignActiveCarParkingLot(carDetails [], string [][20], int );
 void removeVehicles(carDetails [], string[][20], int &, carDetails [], int &);void removeFromParkingLot(string, string [][20]);
 void addExitedVehicles(carDetails [], carDetails , int &);
 int calculateDuration(int, int);
+int getMembershipManageMentInput();
 
 
 
@@ -108,9 +114,9 @@ int main() {
 
     //3 membership levels
     const membershipDetails membership[3] {
-        {"GOLD", 0.05},
-        {"PLANTIUM", 0.10},
-        {"DIAMOND", 0.15}
+        {"GOLD", 20, 0.05},
+        {"PLANTIUM", 27, 0.10},
+        {"DIAMOND", 35, 0.15}
     };
 
     carDetails exitedVehicles[200];
@@ -134,28 +140,39 @@ int main() {
 
             int input;
             cout << "Enter thee input ";
-            cin >> input;
+            if (!(cin >> input)) {
+                cout << "Invalid input" << endl;
+                cin.clear();
+                cin.ignore();
+                continue;
+            }
 
             if (input == 7) {
                 break;
             }
 
             switch (input) {
-                case 1:
+                case 1: {
                     addVehicle(activeCars, parkingLot, activeCarsCount);
                     break;
-
-                case 2:
+                }
+                case 2: {
                     removeVehicles(activeCars, parkingLot, activeCarsCount, exitedVehicles, exitedVehicleCount);
                     break;
-
-                case 5:
+                }
+                case 3: {
+                    int memberInput = getMembershipManageMentInput();
+                    cout << endl << memberInput;
+                    break;
+                }
+                case 5: {
                     displayparkingLot(parkingLot);
                     break;
-
-                default:
+                }
+                default: {
                     cout << "Invalid option.\n";
                     break;
+                }
             }
             
         
@@ -169,7 +186,12 @@ int main() {
             cout << exitedVehicles[i].exitTime << endl;
             cout << exitedVehicles[i].duration << endl;
         }
-}
+
+        cout << "\n\nCURRENT ACTIVE CAR\n\n";
+        for (int i = 0; i < activeCarsCount; i++) {
+            activeCars[i].displayData();
+        }
+    }
 
 
 void inputCars(carDetails activeCars[], ifstream &inCar, int &activeCarsCount) {
@@ -324,3 +346,16 @@ int calculateDuration(int entryTime, int exitTime){
 
     return endMinutes - startMinutes;
 }
+
+int getMembershipManageMentInput() {
+    cout << "\n============= MEMBERSHIP MANAGEMENT ===============\n\n";
+    cout << "1. Add Member\n"
+        << "2. Remove Member\n"
+        << "3. View Membership Details\n"
+        << "4. View Active Membership\n";
+    
+    int memberInput;
+    cout << "\nPlease enter the number: ";
+    cin >> memberInput;
+    return memberInput;
+}   
