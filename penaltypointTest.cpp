@@ -17,8 +17,8 @@ struct carDetails {
     bool isMember;
     string memberLevel;
     
-    double parkingFee;
-    double finalFee;
+    double parkingFee = 0;
+    double finalFee = 0;
 
     int parkingColumn;
     int parkingRow;
@@ -81,15 +81,18 @@ void removeVehicles(carDetails [], string[][20], int &, carDetails [], int &);vo
 void addExitedVehicles(carDetails [], carDetails , int &);
 int calculateDuration(int, int);
 int getMembershipManageMentInput();
-void processMembershipManagementInput(int, activeMembership [], membershipDetails [], int &);
+bool checkMembershipPlateNo(string plateNo, activeMembership activeMembership[], int activeMembershipCount);
+void processMembershipManagementInput(int memberInput, activeMembership activeMembership[], int &activeMembershipCount);
+bool checkMembership(string membershipLevel);
+
 
 
 //3 membership levels
 const membershipDetails membership[3] {
-        {"GOLD", 20, 0.05},
-        {"PLANTIUM", 27, 0.10},
-        {"DIAMOND", 35, 0.15}
-    };
+    {"GOLD", 20, 0.05},
+    {"PLANTIUM", 27, 0.10},
+    {"DIAMOND", 35, 0.15}
+};
 
 
     int main() {
@@ -164,7 +167,6 @@ const membershipDetails membership[3] {
                 }
                 case 3: {
                     int memberInput = getMembershipManageMentInput();
-                    cout << endl << memberInput;
                     processMembershipManagementInput(memberInput, activeMembership, activeMembershipCount);
                     break;
                 }
@@ -358,13 +360,34 @@ int getMembershipManageMentInput() {
 }   
 
 
+//when adding member that means that a car is a new member and have to pay upfront. price will be added to the noPlate's total Cost
 void addMember(activeMembership activeMembership[], int &activeMembershipCount) {
+    string plateNo;
+    string membershipLevel;
+    string ownerName;
+
+    //check noPlate is already registered and membership from the available membership
     cout << "Enter plateNo:";
-    getline(cin >> ws, activeMembership[activeMembershipCount].plateNo);
-    cout << "Enter ownerName: ";
-    getline(cin >> ws, activeMembership[activeMembershipCount].ownerName);
+    getline(cin >> ws, plateNo);
+    if (checkMembershipPlateNo(plateNo, activeMembership, activeMembershipCount)) {
+        cout << "Plate No already registered!" << endl;
+        return;
+    }
+
     cout << "Enter membership level: ";
-    getline(cin >> ws, activeMembership[activeMembershipCount].memberLevel);
+    getline(cin >> ws, membershipLevel);
+    if (!checkMembership(membershipLevel)) {
+        cout << "Invalid Membershiplevel!" << endl;
+        return;
+    }
+    cout << "Enter ownerName: ";
+    getline(cin >> ws, ownerName);
+
+    activeMembership[activeMembershipCount].plateNo = plateNo; 
+    activeMembership[activeMembershipCount].memberLevel = membershipLevel; 
+    activeMembership[activeMembershipCount].ownerName = ownerName;
+
+    activeMembershipCount++;
 }
 
 void removeMember(activeMembership activeMembership[], int &activeMembershipCount) {
@@ -372,29 +395,70 @@ void removeMember(activeMembership activeMembership[], int &activeMembershipCoun
 }
 
 void displayMembershipDetails(){
-    //membership global variable
+    for (int i = 0; i < 3; i++) {
+
+    }
 }
 
 void displayActiveMembership(activeMembership activeMembership[], int activeMembershipCount) {
+    cout << "\n\n========== ACTIVE MEMBERSHIP ================\n\n";
     for (int i = 0; i < activeMembershipCount; i++) {
         cout << "Member " << i + 1 << " ";
         activeMembership[i].displayData();
         cout << endl;
     }
+
+    cout << "\n==================================\n\n";
+
 }
 void processMembershipManagementInput(int memberInput, activeMembership activeMembership[], int &activeMembershipCount) {
     switch (memberInput) {
         case 1: {
             addMember(activeMembership, activeMembershipCount);
+            break;
         }
         case 2: {
             removeMember(activeMembership, activeMembershipCount);
+            break;
         } 
         case 3: {
             displayMembershipDetails();
+            break;
         }
         case 4 :
             displayActiveMembership(activeMembership, activeMembershipCount);
+            break;
 
     }
+}
+
+bool checkMembershipPlateNo(string plateNo, activeMembership activeMembership[], int activeMembershipCount) {
+    for (int i = 0; i < activeMembershipCount; i++) {
+        if (activeMembership[i].plateNo == plateNo) {
+            return true;
+        }
+    }
+    return false;
+}
+
+bool checkMembership(string membershipLevel) {
+    //using i < 3 because membership is a constant and the client does not want to expand it anytime soon :)
+    for (int i = 0; i < 3; i++) {
+        if (membership[i].memberLevel == membershipLevel) {
+            return true;
+        }
+    }
+    return false;
+}
+
+void addMemberPriceToTotal(string memberLevel, carDetails car) {
+    int price;
+    for (int i = 0; i < 3; i++) {
+        if (membership[i].memberLevel = memberLevel) {
+            price = membership[i].memberPrice;
+            break;
+        }
+    }
+
+    car.finalFee += price;
 }
