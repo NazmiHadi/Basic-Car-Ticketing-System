@@ -37,14 +37,14 @@ struct carDetails {
         inCar.ignore();
     }
 
-    void displayData() {
+    void displayData() const {
         cout << plateNo << endl;
         cout << entryTime << endl;
         cout << penaltyPoints << endl;
     }
 };
 
-struct activeMembership {
+struct member {
     string plateNo;
     string ownerName;
     string memberLevel;
@@ -55,7 +55,7 @@ struct activeMembership {
         getline(inMembers >> ws, memberLevel);
     }
 
-    void displayData() {
+    void displayData() const {
         cout << "plateNo: " << plateNo << " ";
         cout << "ownerName: " << ownerName << " ";
         cout << "memberLevel " << memberLevel << " ";
@@ -68,6 +68,7 @@ struct membershipDetails {
     double disountRate;
 };
 
+
 struct parkingSystem {
     string parkingLot[10][20];
 
@@ -77,7 +78,7 @@ struct parkingSystem {
     carDetails exitedVehicles[200];
     int exitedVehicleCount = 0;
 
-    activeMembership activeMembership[200];
+    member activeMembership[200];
     int activeMembershipCount = 0;
 };
 
@@ -90,8 +91,21 @@ void displayparkingLot(const parkingSystem &system);
 void addVehicle(parkingSystem &system);
 void removeFromParkingLot(string plateNo, parkingSystem &system);
 void removeVehicles(parkingSystem &system);
+int getIndexFromPlateNo(const parkingSystem system, string plateNo);
 void addExitedVehicles(parkingSystem &system, carDetails exitingCars);
 int calculateDuration(int entryTime, int exitTime);
+
+int getMembershipmanagementInput();
+void processMembershipManagementInput(parkingSystem &system, int memberInput);
+void addMember(parkingSystem &system);
+void removeMember(member activeMembership[], int &activeMembershipCount);
+void displayMembershipDetails();
+void displayActiveMembership(const parkingSystem &system);
+bool checkMembershipPlateNo(const parkingSystem &system, string plateNo);
+bool checkMembership(string membershipLevel);
+void addMemberPriceToTotal(parkingSystem &system, string memberLevel, int targetIndex);
+
+
 
 
 //3 membership levels
@@ -134,11 +148,12 @@ const membershipDetails membership[3] {
         cout << "Vehicle Ticketing Menu, Please input the number as below\n";
         cout << "1. Vechicle Entry\n"
             << "2. Vehicle Exit\n"
-            << "3. Membership Management\n"
-            << "4. Search Vechicle\n"
-            << "5. Current Statistics\n"
-            << "6. End Day and Generate Report\n"
-            << "7. Exit Program\n";
+            << "3. View Parking Lot\n"
+            << "4. Membership Management\n"
+            << "5. Search Vechicle\n"
+            << "6. Current Statistics\n"
+            << "7. End Day and Generate Report\n"
+            << "8. Exit Program\n";
 
         int input;
         cout << "Enter thee input ";
@@ -153,7 +168,7 @@ const membershipDetails membership[3] {
             continue;
         }
 
-        if (input == 7) {
+        if (input == 8) {
             break;
         }
 
@@ -166,15 +181,16 @@ const membershipDetails membership[3] {
                 removeVehicles(system);
                 break;
             }
-            /*case 3: {
+            case 3: {
+                displayparkingLot(system);
+                break;
+            }
+            /*case 4: {
                 int memberInput = getMembershipManageMentInput();
                 processMembershipManagementInput(memberInput, activeMembership, activeMembershipCount);
                 break;
             }*/
-            case 5: {
-                displayparkingLot(system);
-                break;
-            }
+            
             default: {
                 cout << "Invalid option.\n";
                 cout << "\n\n =================================== \n\n";
@@ -311,20 +327,10 @@ void removeVehicles(parkingSystem &system) {
     cout << "No Plate To Remove: ";
     getline(cin >> ws, exitVehiclePlate);
 
-    int targetIndex = -1;
-    bool found = false;
-
     //getting the target index;
-    for (int i = 0; i < system.activeCarsCount; i++) {
-        if (system.activeCars[i].plateNo == exitVehiclePlate) {
-            targetIndex = i;
-            found = true;
-            cout << "Vehicle found!" << endl;
-            break;
-        }
-    }
+    int targetIndex = getIndexFromPlateNo(system, exitVehiclePlate);
 
-    if (found == false) {
+    if (targetIndex == -1) {
         cout << "wrong plate no, please retry" << endl;
         cout << "\n =============================================\n\n";
 
@@ -345,6 +351,18 @@ void removeVehicles(parkingSystem &system) {
 
     cout << "\n =============================================\n\n";
 
+}
+
+int getIndexFromPlateNo(const parkingSystem system, string plateNo) {
+    int targetIndex = -1;
+
+     for (int i = 0; i < system.activeCarsCount; i++) {
+        if (system.activeCars[i].plateNo == plateNo) {
+            targetIndex = i;
+            break;
+        }
+    }
+    return targetIndex;
 }
 
 
@@ -373,13 +391,18 @@ int calculateDuration(int entryTime, int exitTime){
     return endMinutes - startMinutes;
 }
 
-/*
-int getMembershipManageMentInput() {
+/// FLOWCHART ENDS HERRE ///
+////////////////////////////
+////////////////////////////
+////////////////////////////
+
+
+int getMembershipmanagementInput() {
     cout << "\n============= MEMBERSHIP MANAGEMENT ===============\n\n";
     cout << "1. Add Member\n"
-        << "2. Remove Member\n"
-        << "3. View Membership Details\n"
-        << "4. View Active Membership\n";
+    << "2. Remove Member\n"
+    << "3. View Membership Details\n"
+    << "4. View Active Membership\n";
     
     int memberInput;
     cout << "\nPlease enter the number: ";
@@ -387,22 +410,46 @@ int getMembershipManageMentInput() {
     return memberInput;
 }   
 
-void addMember(activeMembership activeMembership[], int &activeMembershipCount, carDetails &car) {
+void processMembershipManagementInput(parkingSystem &system, int memberInput) {
+    switch (memberInput) {
+        case 1: {
+            addMember(system);
+            break;
+        }
+        /*
+        case 2: {
+            removeMember(activeMembership, activeMembershipCount);
+            break;
+        } */
+        case 3: {
+            displayMembershipDetails();
+            break;
+        }
+        case 4 :
+            displayActiveMembership(system);
+            break;
+    }
+}
+
+void addMember(parkingSystem &system) {
     string plateNo;
     string membershipLevel;
     string ownerName;
-
+    
     //check noPlate is already registered and membership from the available membership
     cout << "Enter plateNo:";
     getline(cin >> ws, plateNo);
-    if (checkMembershipPlateNo(plateNo, activeMembership, activeMembershipCount)) {
+    if (checkMembershipPlateNo(system, plateNo)) {
         cout << "Plate No already registered!" << endl;
         return;
     }
 
     //when adding a member, it means that a car is paying upfront, and therefore has be currently parked, meaning it is inside activeVehicle. cheking that
-    carDetails searchCarByPlateNo(plateNo, activeCar, activeCarsCount) {
-
+    int targetIndex = getIndexFromPlateNo(system, plateNo);    
+    if (targetIndex == -1) {
+        cout << "Vehicle is not in parking lot!" << endl;
+        return; 
+    }
 
     cout << "Enter membership level: ";
     getline(cin >> ws, membershipLevel);
@@ -413,63 +460,39 @@ void addMember(activeMembership activeMembership[], int &activeMembershipCount, 
     cout << "Enter ownerName: ";
     getline(cin >> ws, ownerName);
 
-    activeMembership[activeMembershipCount].plateNo = plateNo; 
-    activeMembership[activeMembershipCount].memberLevel = membershipLevel; 
-    activeMembership[activeMembershipCount].ownerName = ownerName;
+    system.activeMembership[system.activeMembershipCount].plateNo = plateNo; 
+    system.activeMembership[system.activeMembershipCount].memberLevel = membershipLevel; 
+    system.activeMembership[system.activeMembershipCount].ownerName = ownerName;
 
-    activeMembershipCount++;
+    system.activeMembershipCount++;
 
     //when adding member that means that a car is a new member and have to pay upfront. price will be added to the noPlate's total Cost
-    addMemberPriceToTotal(membershipLevel, car);
-
-    
-}
-
-void removeMember(activeMembership activeMembership[], int &activeMembershipCount) {
-    
+    addMemberPriceToTotal(system, membershipLevel, targetIndex);
 }
 
 void displayMembershipDetails(){
     for (int i = 0; i < 3; i++) {
-
+        cout << "Membership Name: " << membership[i].memberLevel << endl;
+        cout << "Membership Discount: " << membership[i].disountRate << endl;
+        cout << "Membership price: " << membership[i].memberPrice << endl;
     }
 }
 
-void displayActiveMembership(activeMembership activeMembership[], int activeMembershipCount) {
+void displayActiveMembership(const parkingSystem &system) {
     cout << "\n\n========== ACTIVE MEMBERSHIP ================\n\n";
-    for (int i = 0; i < activeMembershipCount; i++) {
+    for (int i = 0; i < system.activeMembershipCount; i++) {
         cout << "Member " << i + 1 << " ";
-        activeMembership[i].displayData();
+        system.activeMembership[i].displayData();
         cout << endl;
     }
 
     cout << "\n==================================\n\n";
 
 }
-void processMembershipManagementInput(int memberInput, activeMembership activeMembership[], int &activeMembershipCount) {
-    switch (memberInput) {
-        case 1: {
-            addMember(activeMembership, activeMembershipCount,);
-            break;
-        }
-        case 2: {
-            removeMember(activeMembership, activeMembershipCount);
-            break;
-        } 
-        case 3: {
-            displayMembershipDetails();
-            break;
-        }
-        case 4 :
-            displayActiveMembership(activeMembership, activeMembershipCount);
-            break;
 
-    }
-}
-
-bool checkMembershipPlateNo(string plateNo, activeMembership activeMembership[], int activeMembershipCount) {
-    for (int i = 0; i < activeMembershipCount; i++) {
-        if (activeMembership[i].plateNo == plateNo) {
+bool checkMembershipPlateNo(const parkingSystem &system, string plateNo) {
+    for (int i = 0; i < system.activeMembershipCount; i++) {
+        if (system.activeMembership[i].plateNo == plateNo) {
             return true;
         }
     }
@@ -486,24 +509,24 @@ bool checkMembership(string membershipLevel) {
     return false;
 }
 
-void addMemberPriceToTotal(string memberLevel, carDetails &car) {
+void addMemberPriceToTotal(parkingSystem &system, string memberLevel, int targetIndex) {
     int price;
     for (int i = 0; i < 3; i++) {
-        if (membership[i].memberLevel = memberLevel) {
+        if (membership[i].memberLevel == memberLevel) {
             price = membership[i].memberPrice;
             break;
         }
     }
-
-    car.finalFee += price;
+    system.activeCars[targetIndex].finalFee += price;
 }
 
-carDetails searchCarByPlateNo(string plateNo, carDetails activeCar[], int activeCarsCount) {
-    for (int i = 0; i < activeCarsCount; i++) {
-        if (activeCar[i].plateNo == plateNo) {
-            return activeCar[i];
-            break;
+/*
+bool searchCarByPlateNo(const parkingSystem &system, string plateNo) {
+    for (int i = 0; i < system.activeCarsCount; i++) {
+        if (system.activeCars[i].plateNo == plateNo) {
+            return true;
         }
     }
+    return false;
 }
 */
