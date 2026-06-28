@@ -68,23 +68,30 @@ struct membershipDetails {
     double disountRate;
 };
 
+struct parkingSystem {
+    string parkingLot[10][20];
+
+    carDetails activeCars[200];
+    int activeCarsCount = 0;
+
+    carDetails exitedVehicles[200];
+    int exitedVehicleCount = 0;
+
+    activeMembership activeMembership[200];
+    int activeMembershipCount = 0;
+};
 
 
-void inputCars (carDetails[], ifstream &, int &);
-void assignParkingLot(carDetails[], string[][20]);
-void displayparkingLot(string [][20]);
-void assignMembership(activeMembership [], ifstream &, int &);
-void displayActiveMembership(activeMembership [], int);
-void addVehicle(carDetails [], string [][20], int &);
-void assignActiveCarParkingLot(carDetails [], string [][20], int );
-void removeVehicles(carDetails [], string[][20], int &, carDetails [], int &);void removeFromParkingLot(string, string [][20]);
-void addExitedVehicles(carDetails [], carDetails , int &);
-int calculateDuration(int, int);
-int getMembershipManageMentInput();
-bool checkMembershipPlateNo(string plateNo, activeMembership activeMembership[], int activeMembershipCount);
-void processMembershipManagementInput(int memberInput, activeMembership activeMembership[], int &activeMembershipCount);
-bool checkMembership(string membershipLevel);
-
+void inputCars(parkingSystem &system, ifstream &inCar);
+void assignActiveCarParkingLot(parkingSystem &system);
+bool assignParkingLot(carDetails &newCar, parkingSystem &system);
+void assignMembership(parkingSystem &system, ifstream &inMembers);
+void displayparkingLot(const parkingSystem &system);
+void addVehicle(parkingSystem &system);
+void removeFromParkingLot(string plateNo, parkingSystem &system);
+void removeVehicles(parkingSystem &system);
+void addExitedVehicles(parkingSystem &system, carDetails exitingCars);
+int calculateDuration(int entryTime, int exitTime);
 
 
 //3 membership levels
@@ -107,80 +114,75 @@ const membershipDetails membership[3] {
         return 1;
     }
     
-    // inputting the active cars into array, and setting up the parking lot
-    //all parking lot are empty, and will be filled with active cars after
-    //parking lot will hold the plateNo of each cars
-    string parkingLot[10][20];
+    parkingSystem system;
+
+    // at program initialization, parking lot will be empty. then will be filled with active cars and new cars and so on
     for (int i = 0; i < 10; i++) {
         for (int j = 0; j < 20; j++) {
-            parkingLot[i][j] = "";
+            system.parkingLot[i][j] = "";
         }
     }
 
-    //active cars inside the file already have their own respective parking lot assigned to them when they entered before.
-    carDetails activeCars[200];
-    int activeCarsCount = 0;
-    inputCars(activeCars, inCar, activeCarsCount);
-    //assign the active car into their own respective parkingLot
-    assignActiveCarParkingLot(activeCars, parkingLot, activeCarsCount);
+    //input the active car from file into active car array inside system
+    inputCars(system, inCar);
+    //fill the parking lot with active cars / cars that have been here before program initialization
+    assignActiveCarParkingLot(system);
+    //input the active membership from file into active membership array inside system
+    assignMembership(system, inMembers);
 
-    carDetails exitedVehicles[200];
-    int exitedVehicleCount = 0;
+    while(true) {
+        cout << "Vehicle Ticketing Menu, Please input the number as below\n";
+        cout << "1. Vechicle Entry\n"
+            << "2. Vehicle Exit\n"
+            << "3. Membership Management\n"
+            << "4. Search Vechicle\n"
+            << "5. Current Statistics\n"
+            << "6. End Day and Generate Report\n"
+            << "7. Exit Program\n";
 
-    //assign all the current memberships inside the membership file into membershipArray.
-    activeMembership activeMembership[200];
-    int activeMembershipCount = 0;
-    assignMembership(activeMembership, inMembers, activeMembershipCount);
+        int input;
+        cout << "Enter thee input ";
 
-        while(true) {
-            cout << "Vehicle Ticketing Menu, Please input the number as below\n";
+        //edge case for string input
+        if (!(cin >> input)) {
+            cout << "\nInvalid input" << endl;
+            cin.clear();
+            cin.ignore();
 
-            cout << "1. Vechicle Entry\n"
-                << "2. Vehicle Exit\n"
-                << "3. Membership Management\n"
-                << "4. Search Vechicle\n"
-                << "5. Current Statistics\n"
-                << "6. End Day and Generate Report\n"
-                << "7. Exit Program\n";
+            cout << "\n\n =================================== \n\n";
+            continue;
+        }
 
-            int input;
-            cout << "Enter thee input ";
-            if (!(cin >> input)) {
-                cout << "Invalid input" << endl;
-                cin.clear();
-                cin.ignore();
-                continue;
-            }
+        if (input == 7) {
+            break;
+        }
 
-            if (input == 7) {
+        switch (input) {
+            case 1: {
+                addVehicle(system);
                 break;
             }
-
-            switch (input) {
-                case 1: {
-                    addVehicle(activeCars, parkingLot, activeCarsCount);
-                    break;
-                }
-                case 2: {
-                    removeVehicles(activeCars, parkingLot, activeCarsCount, exitedVehicles, exitedVehicleCount);
-                    break;
-                }
-                case 3: {
-                    int memberInput = getMembershipManageMentInput();
-                    processMembershipManagementInput(memberInput, activeMembership, activeMembershipCount);
-                    break;
-                }
-                case 5: {
-                    displayparkingLot(parkingLot);
-                    break;
-                }
-                default: {
-                    cout << "Invalid option.\n";
-                    break;
-                }
+            case 2: {
+                removeVehicles(system);
+                break;
             }
-            
+            /*case 3: {
+                int memberInput = getMembershipManageMentInput();
+                processMembershipManagementInput(memberInput, activeMembership, activeMembershipCount);
+                break;
+            }*/
+            case 5: {
+                displayparkingLot(system);
+                break;
+            }
+            default: {
+                cout << "Invalid option.\n";
+                cout << "\n\n =================================== \n\n";
+                break;
+            }
+        }
         
+    
         }
 
 
@@ -201,29 +203,37 @@ const membershipDetails membership[3] {
     }
 
 
-void inputCars(carDetails activeCars[], ifstream &inCar, int &activeCarsCount) {
+void inputCars(parkingSystem &system, ifstream &inCar) {
     //this while inputs the active car file into the active car array
     //and if input is successfull it returns true
     while (!inCar.eof()) {
-        activeCars[activeCarsCount].getData(inCar);
-        activeCarsCount++;
+        system.activeCars[system.activeCarsCount].getData(inCar);
+        system.activeCarsCount++;
     }
 }
 
-void assignActiveCarParkingLot(carDetails activeCar[], string parkingLot[][20], int activeCarCount) {
-    for (int i = 0; i < activeCarCount; i++) {
-        parkingLot[activeCar[i].parkingRow][activeCar[i].parkingColumn] = activeCar[i].plateNo; 
+void assignActiveCarParkingLot(parkingSystem &system) {
+    for (int i = 0; i < system.activeCarsCount; i++) {
+        system.parkingLot[system.activeCars[i].parkingRow][system.activeCars[i].parkingColumn] = system.activeCars[i].plateNo; 
     }
 }
 
-bool assignParkingLot(carDetails &newCar, string parkingLot[][20]) {
-    //while assigning the parking lot of new car, its row and column is saved in the car struct/object
+bool assignParkingLot(carDetails &newCar, parkingSystem &system) {
+    //while adding a new car into active car, it is assigned a parking row and column if available
     for (int i = 0; i < 10; i++) {
         for (int j = 0; j < 20; j++) {
-            if (parkingLot[i][j] == "") {
-                parkingLot[i][j] = newCar.plateNo;
+            if (system.parkingLot[i][j] == "") {
+                system.parkingLot[i][j] = newCar.plateNo;
+
+                cout << "i: " << i << endl;
+                cout << "j: " << j << endl;
+
                 newCar.parkingColumn = j;
                 newCar.parkingRow = i;
+                
+                cout << "i: " << i << endl;
+                cout << "j: " << j << endl;
+
                 return true;
             }
         }
@@ -232,27 +242,33 @@ bool assignParkingLot(carDetails &newCar, string parkingLot[][20]) {
     return false;
 }
 
-void assignMembership(activeMembership activeMembership[], ifstream &inMembers, int &activeMembershipCount) {
+void assignMembership(parkingSystem &system, ifstream &inMembers) {
     while (!inMembers.eof()) {
-        activeMembership[activeMembershipCount].getData(inMembers);
-        activeMembershipCount++;
+        system.activeMembership[system.activeMembershipCount].getData(inMembers);
+        system.activeMembershipCount++;
     }
 }
 
-void displayparkingLot(string parkingLot[][20]) {    
-    cout << "\n\n Parking Lot \n\n";
+
+//system is a large struct, and passing by value means copying a very large value. this uses alot of recources
+//instead, i use pass by reference and uses const so that this function cannot edit the original value and can only use them.
+void displayparkingLot(const parkingSystem &system) {    
+    cout << "\n\n =================== Parking Lot ========================== \n";
     for (int i = 0; i < 10; i++) {
         cout  << "Row " << i+1 << endl;
         for (int j = 0; j < 20; j++) {
-            cout << parkingLot[i][j];
+            cout << system.parkingLot[i][j];
             cout << " || ";
         }
         cout << endl;
     }
+    cout << "\n==============================================================\n\n";
 }
 
-void addVehicle(carDetails activeCars[], string parkingLot[][20], int &activeCarsCount) {
+void addVehicle(parkingSystem &system) {
     carDetails newCar;
+
+    cout << "\n\n ============== CAR ENTRY ==================\n";
 
     cout << "Enter Plate No: ";
     getline(cin >> ws, newCar.plateNo);
@@ -260,7 +276,7 @@ void addVehicle(carDetails activeCars[], string parkingLot[][20], int &activeCar
     cout << "Enter Entry Time: ";
     cin >> newCar.entryTime;
 
-    bool isParked = assignParkingLot(newCar, parkingLot);
+    bool isParked = assignParkingLot(newCar, system);
 
     if (!isParked) {
         cout << "Parking Full";
@@ -270,21 +286,27 @@ void addVehicle(carDetails activeCars[], string parkingLot[][20], int &activeCar
     cout << "Found Parking at " 
         << newCar.parkingRow << "," << newCar.parkingColumn << endl;
 
-    activeCars[activeCarsCount++] = newCar;
+    system.activeCars[system.activeCarsCount++] = newCar;
+
+    cout << "\n =============================================\n\n";
 }
 
-void removeFromParkingLot(string plateNo, string parkingLot[][20]) {
+void removeFromParkingLot(string plateNo, parkingSystem &system) {
+    //upon removal of vehicles, the parking lot will also be emptied
     for (int i = 0; i < 10; i++) {
         for (int j = 0; j < 20; j++) {
-            if (parkingLot[i][j] == plateNo) {
-                parkingLot[i][j] = "";
+            if (system.parkingLot[i][j] == plateNo) {
+                system.parkingLot[i][j] = "";
                 return;
             }
         }
     }
 }
 
-void removeVehicles(carDetails activeCars[], string parkingLot[][20], int &activeCarsCount, carDetails exitedVehicles[], int &exitedVehicleCount) {
+void removeVehicles(parkingSystem &system) {
+    cout << "\n\n ============== CAR EXIT ==================\n";
+
+
     string exitVehiclePlate;
     cout << "No Plate To Remove: ";
     getline(cin >> ws, exitVehiclePlate);
@@ -293,8 +315,8 @@ void removeVehicles(carDetails activeCars[], string parkingLot[][20], int &activ
     bool found = false;
 
     //getting the target index;
-    for (int i = 0; i < activeCarsCount; i++) {
-        if (activeCars[i].plateNo == exitVehiclePlate) {
+    for (int i = 0; i < system.activeCarsCount; i++) {
+        if (system.activeCars[i].plateNo == exitVehiclePlate) {
             targetIndex = i;
             found = true;
             cout << "Vehicle found!" << endl;
@@ -304,38 +326,43 @@ void removeVehicles(carDetails activeCars[], string parkingLot[][20], int &activ
 
     if (found == false) {
         cout << "wrong plate no, please retry" << endl;
+        cout << "\n =============================================\n\n";
+
         return;
     }
 
-    removeFromParkingLot(exitVehiclePlate, parkingLot);
+    removeFromParkingLot(exitVehiclePlate, system);
 
-    addExitedVehicles(exitedVehicles, activeCars[targetIndex], exitedVehicleCount);
+    addExitedVehicles(system, system.activeCars[targetIndex]);
 
     // Shift elements to the left to overwrite the target
-    for (int i = targetIndex; i < activeCarsCount - 1; i++) {
-        activeCars[i] = activeCars[i + 1];
+    for (int i = targetIndex; i < system.activeCarsCount - 1; i++) {
+        system.activeCars[i] = system.activeCars[i + 1];
     }
 
-    activeCarsCount--;
+    system.activeCarsCount--;
     cout << "Vehicle successfully exited" << endl;
+
+    cout << "\n =============================================\n\n";
+
 }
 
-void addExitedVehicles(carDetails exitedVehicles[], carDetails exitingCars, int &exitedVehicleCount) {
+
+void addExitedVehicles(parkingSystem &system, carDetails exitingCars) {
     int exitTime;
     cout << "Enter Exit Time for current vehicle: ";
     cin >> exitTime;
-    if (exitTime < exitedVehicles[exitedVehicleCount].entryTime) {
+    if (exitTime < system.exitedVehicles[system.exitedVehicleCount].entryTime) {
         cout << "Invalid exit time. please retry" << endl;
         return;
     }
 
-    exitedVehicles[exitedVehicleCount].plateNo = exitingCars.plateNo;  
-    exitedVehicles[exitedVehicleCount].entryTime = exitingCars.entryTime;  
-    exitedVehicles[exitedVehicleCount].exitTime = exitTime; 
-    //exitedVehicles[exitedVehicleCount].duration = calculateDuration();  
-    exitedVehicles[exitedVehicleCount].duration = calculateDuration(exitingCars.entryTime, exitTime);  
+    system.exitedVehicles[system.exitedVehicleCount].plateNo = exitingCars.plateNo;  
+    system.exitedVehicles[system.exitedVehicleCount].entryTime = exitingCars.entryTime;  
+    system.exitedVehicles[system.exitedVehicleCount].exitTime = exitTime; 
+    system.exitedVehicles[system.exitedVehicleCount].duration = calculateDuration(exitingCars.entryTime, exitTime);  
     
-    exitedVehicleCount++;
+    system.exitedVehicleCount++;
 }
 
 
@@ -346,6 +373,7 @@ int calculateDuration(int entryTime, int exitTime){
     return endMinutes - startMinutes;
 }
 
+/*
 int getMembershipManageMentInput() {
     cout << "\n============= MEMBERSHIP MANAGEMENT ===============\n\n";
     cout << "1. Add Member\n"
@@ -359,9 +387,7 @@ int getMembershipManageMentInput() {
     return memberInput;
 }   
 
-
-//when adding member that means that a car is a new member and have to pay upfront. price will be added to the noPlate's total Cost
-void addMember(activeMembership activeMembership[], int &activeMembershipCount) {
+void addMember(activeMembership activeMembership[], int &activeMembershipCount, carDetails &car) {
     string plateNo;
     string membershipLevel;
     string ownerName;
@@ -373,6 +399,10 @@ void addMember(activeMembership activeMembership[], int &activeMembershipCount) 
         cout << "Plate No already registered!" << endl;
         return;
     }
+
+    //when adding a member, it means that a car is paying upfront, and therefore has be currently parked, meaning it is inside activeVehicle. cheking that
+    carDetails searchCarByPlateNo(plateNo, activeCar, activeCarsCount) {
+
 
     cout << "Enter membership level: ";
     getline(cin >> ws, membershipLevel);
@@ -388,6 +418,11 @@ void addMember(activeMembership activeMembership[], int &activeMembershipCount) 
     activeMembership[activeMembershipCount].ownerName = ownerName;
 
     activeMembershipCount++;
+
+    //when adding member that means that a car is a new member and have to pay upfront. price will be added to the noPlate's total Cost
+    addMemberPriceToTotal(membershipLevel, car);
+
+    
 }
 
 void removeMember(activeMembership activeMembership[], int &activeMembershipCount) {
@@ -414,7 +449,7 @@ void displayActiveMembership(activeMembership activeMembership[], int activeMemb
 void processMembershipManagementInput(int memberInput, activeMembership activeMembership[], int &activeMembershipCount) {
     switch (memberInput) {
         case 1: {
-            addMember(activeMembership, activeMembershipCount);
+            addMember(activeMembership, activeMembershipCount,);
             break;
         }
         case 2: {
@@ -451,7 +486,7 @@ bool checkMembership(string membershipLevel) {
     return false;
 }
 
-void addMemberPriceToTotal(string memberLevel, carDetails car) {
+void addMemberPriceToTotal(string memberLevel, carDetails &car) {
     int price;
     for (int i = 0; i < 3; i++) {
         if (membership[i].memberLevel = memberLevel) {
@@ -462,3 +497,13 @@ void addMemberPriceToTotal(string memberLevel, carDetails car) {
 
     car.finalFee += price;
 }
+
+carDetails searchCarByPlateNo(string plateNo, carDetails activeCar[], int activeCarsCount) {
+    for (int i = 0; i < activeCarsCount; i++) {
+        if (activeCar[i].plateNo == plateNo) {
+            return activeCar[i];
+            break;
+        }
+    }
+}
+*/
