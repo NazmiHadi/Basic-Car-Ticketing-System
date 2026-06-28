@@ -44,7 +44,7 @@ struct carDetails {
     }
 };
 
-struct carMembershipDetails {
+struct activeMembership {
     string plateNo;
     string ownerName;
     string memberLevel;
@@ -73,26 +73,35 @@ struct membershipDetails {
 void inputCars (carDetails[], ifstream &, int &);
 void assignParkingLot(carDetails[], string[][20]);
 void displayparkingLot(string [][20]);
-void assignMembership(carMembershipDetails [], ifstream &, int &);
-void displayCarMembershipDetails(carMembershipDetails [], int);
+void assignMembership(activeMembership [], ifstream &, int &);
+void displayActiveMembership(activeMembership [], int);
 void addVehicle(carDetails [], string [][20], int &);
 void assignActiveCarParkingLot(carDetails [], string [][20], int );
 void removeVehicles(carDetails [], string[][20], int &, carDetails [], int &);void removeFromParkingLot(string, string [][20]);
 void addExitedVehicles(carDetails [], carDetails , int &);
 int calculateDuration(int, int);
 int getMembershipManageMentInput();
+void processMembershipManagementInput(int, activeMembership [], membershipDetails [], int &);
 
 
+//3 membership levels
+const membershipDetails membership[3] {
+        {"GOLD", 20, 0.05},
+        {"PLANTIUM", 27, 0.10},
+        {"DIAMOND", 35, 0.15}
+    };
 
 
-int main() {
+    int main() {
     ifstream inCar("active car.txt");
     ifstream inMembers("active membership.txt");
     if (!inCar) {
         cout << "Error reading \"active car.txt\"";
+        return 1;
     }
     if (!inMembers) {
         cout << "Erro reading \"active membership.txt\"";
+        return 1;
     }
     
     // inputting the active cars into array, and setting up the parking lot
@@ -112,20 +121,13 @@ int main() {
     //assign the active car into their own respective parkingLot
     assignActiveCarParkingLot(activeCars, parkingLot, activeCarsCount);
 
-    //3 membership levels
-    const membershipDetails membership[3] {
-        {"GOLD", 20, 0.05},
-        {"PLANTIUM", 27, 0.10},
-        {"DIAMOND", 35, 0.15}
-    };
-
     carDetails exitedVehicles[200];
     int exitedVehicleCount = 0;
 
     //assign all the current memberships inside the membership file into membershipArray.
-    carMembershipDetails carMembershipDetails[200];
-    int membershipCount = 0;
-    assignMembership(carMembershipDetails, inMembers, membershipCount);
+    activeMembership activeMembership[200];
+    int activeMembershipCount = 0;
+    assignMembership(activeMembership, inMembers, activeMembershipCount);
 
         while(true) {
             cout << "Vehicle Ticketing Menu, Please input the number as below\n";
@@ -163,6 +165,7 @@ int main() {
                 case 3: {
                     int memberInput = getMembershipManageMentInput();
                     cout << endl << memberInput;
+                    processMembershipManagementInput(memberInput, activeMembership, activeMembershipCount);
                     break;
                 }
                 case 5: {
@@ -178,6 +181,8 @@ int main() {
         
         }
 
+
+        /*
         cout << "\n\nCURRENT EXITED CAR: \n\n";
         cout << "number of exited vehicles: " << exitedVehicleCount << endl;
         for (int i = 0; i < exitedVehicleCount; i++)  {
@@ -190,7 +195,7 @@ int main() {
         cout << "\n\nCURRENT ACTIVE CAR\n\n";
         for (int i = 0; i < activeCarsCount; i++) {
             activeCars[i].displayData();
-        }
+        }*/
     }
 
 
@@ -225,10 +230,10 @@ bool assignParkingLot(carDetails &newCar, string parkingLot[][20]) {
     return false;
 }
 
-void assignMembership(carMembershipDetails carMembershipDetails[], ifstream &inMembers, int &membershipCount) {
+void assignMembership(activeMembership activeMembership[], ifstream &inMembers, int &activeMembershipCount) {
     while (!inMembers.eof()) {
-        carMembershipDetails[membershipCount].getData(inMembers);
-        membershipCount++;
+        activeMembership[activeMembershipCount].getData(inMembers);
+        activeMembershipCount++;
     }
 }
 
@@ -240,14 +245,6 @@ void displayparkingLot(string parkingLot[][20]) {
             cout << parkingLot[i][j];
             cout << " || ";
         }
-        cout << endl;
-    }
-}
-
-void displayCarMembershipDetails(carMembershipDetails carMembershipDetails[], int membershipCount) {
-    for (int i = 0; i < membershipCount; i++) {
-        cout << "Member " << i + 1 << " ";
-        carMembershipDetails[i].displayData();
         cout << endl;
     }
 }
@@ -359,3 +356,45 @@ int getMembershipManageMentInput() {
     cin >> memberInput;
     return memberInput;
 }   
+
+
+void addMember(activeMembership activeMembership[], int &activeMembershipCount) {
+    cout << "Enter plateNo:";
+    getline(cin >> ws, activeMembership[activeMembershipCount].plateNo);
+    cout << "Enter ownerName: ";
+    getline(cin >> ws, activeMembership[activeMembershipCount].ownerName);
+    cout << "Enter membership level: ";
+    getline(cin >> ws, activeMembership[activeMembershipCount].memberLevel);
+}
+
+void removeMember(activeMembership activeMembership[], int &activeMembershipCount) {
+    
+}
+
+void displayMembershipDetails(){
+    //membership global variable
+}
+
+void displayActiveMembership(activeMembership activeMembership[], int activeMembershipCount) {
+    for (int i = 0; i < activeMembershipCount; i++) {
+        cout << "Member " << i + 1 << " ";
+        activeMembership[i].displayData();
+        cout << endl;
+    }
+}
+void processMembershipManagementInput(int memberInput, activeMembership activeMembership[], int &activeMembershipCount) {
+    switch (memberInput) {
+        case 1: {
+            addMember(activeMembership, activeMembershipCount);
+        }
+        case 2: {
+            removeMember(activeMembership, activeMembershipCount);
+        } 
+        case 3: {
+            displayMembershipDetails();
+        }
+        case 4 :
+            displayActiveMembership(activeMembership, activeMembershipCount);
+
+    }
+}
