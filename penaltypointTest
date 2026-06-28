@@ -22,6 +22,8 @@ struct carDetails {
     int parkingColumn;
     int parkingRow;
 
+    int penaltyPoint = 0;
+
     void getData(ifstream &inCar) {
         getline(inCar >> ws, plateNo, ';');
         inCar >> entryTime;

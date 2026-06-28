@@ -107,3 +107,7 @@ void getMemberData(membership member)
 
 at the beginning of file, we dont know when the exit time of active vehicle is. we calculate when the exitVehicle is called.
 then, we will print all of it inside active car, replacing the old active car with new active car upon end of day.
+
+//at the start of file, we will ask the time and/or date. and at the end of fle we will ask for the end of file also.
+
+the active vehicle inside the active vehicle file is all the vehicle that has exeeced 24 hours. each day will be awarded 1 penalty points. each penalty points costs rm10
