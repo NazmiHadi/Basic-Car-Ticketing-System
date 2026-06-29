@@ -25,7 +25,7 @@ struct carDetails {
 
     int penaltyPoints = 0;
 
-    void getData(ifstream &inCar) {
+    void getDataCar(ifstream &inCar) {
         getline(inCar >> ws, plateNo, ';');
         inCar >> entryTime;
         inCar.ignore();
@@ -37,7 +37,7 @@ struct carDetails {
         inCar.ignore();
     }
 
-    void displayData() const {
+    void displayDataCar() const {
         cout << plateNo << endl;
         cout << entryTime << endl;
         cout << penaltyPoints << endl;
@@ -49,13 +49,13 @@ struct member {
     string ownerName;
     string memberLevel;
 
-    void getData(ifstream &inMembers) {
+    void getDataMember(ifstream &inMembers) {
         getline(inMembers >> ws, plateNo, ';');
         getline(inMembers >> ws, ownerName, ';');
         getline(inMembers >> ws, memberLevel);
     }
 
-    void displayData() const {
+    void displayDataMember() const {
         cout << "plateNo: " << plateNo << " ";
         cout << "ownerName: " << ownerName << " ";
         cout << "memberLevel " << memberLevel << " ";
@@ -93,6 +93,7 @@ void removeFromParkingLot(string plateNo, parkingSystem &system);
 void removeVehicles(parkingSystem &system);
 int getIndexFromPlateNo(const parkingSystem system, string plateNo);
 void addExitedVehicles(parkingSystem &system, carDetails exitingCars);
+void displayParkingLocation(const parkingSystem &system);
 int calculateDuration(int entryTime, int exitTime);
 
 int getMembershipmanagementInput();
@@ -152,7 +153,7 @@ const membershipDetails membership[3] {
             << "2. Vehicle Exit\n"
             << "3. View Parking Lot\n"
             << "4. Membership Management\n"
-            << "5. Search Vechicle\n"
+            << "5. Search Vechicle Location in Parking Lot\n"
             << "6. Current Statistics\n"
             << "7. End Day and Generate Report\n"
             << "8. Exit Program\n";
@@ -193,7 +194,15 @@ const membershipDetails membership[3] {
                 break;
             }
             case 5: {
-
+                displayParkingLocation(system);
+                break;
+            }
+            case 6: {
+                //Current Statistics
+                break;
+            }
+            case 7: {
+                //End Day and Generate Report
             }
             default: {
                 cout << "Invalid option.\n";
@@ -227,7 +236,7 @@ void inputCars(parkingSystem &system, ifstream &inCar) {
     //this while inputs the active car file into the active car array
     //and if input is successfull it returns true
     while (!inCar.eof()) {
-        system.activeCars[system.activeCarsCount].getData(inCar);
+        system.activeCars[system.activeCarsCount].getDataCar(inCar);
         system.activeCarsCount++;
     }
 }
@@ -256,7 +265,7 @@ bool assignParkingLot(carDetails &newCar, parkingSystem &system) {
 
 void assignMembership(parkingSystem &system, ifstream &inMembers) {
     while (!inMembers.eof()) {
-        system.activeMembership[system.activeMembershipCount].getData(inMembers);
+        system.activeMembership[system.activeMembershipCount].getDataMember(inMembers);
         system.activeMembershipCount++;
     }
 }
@@ -376,6 +385,24 @@ void addExitedVehicles(parkingSystem &system, carDetails exitingCars) {
     system.exitedVehicleCount++;
 }
 
+void displayParkingLocation(const parkingSystem &system) {
+    cout << "\n============= SEARCH PARKING ===============\n\n";
+
+    string plateNo;
+    cout << "Enter the plate no of the vehicle you are looking for: ";
+    getline(cin >> ws, plateNo);
+
+    int targetIndex = getIndexFromPlateNo(system, plateNo);
+
+    if (targetIndex == -1) {
+        cout << "Plate No not found\n\n\n";
+        return;
+    }
+
+    cout << "Your car is at row " << system.activeCars[targetIndex].parkingRow << " And Column : " << system.activeCars[targetIndex].parkingColumn;
+    cout << "\n =============================================\n\n";
+}
+
 
 int calculateDuration(int entryTime, int exitTime){
     int startMinutes = ((entryTime / 100) * 60) + (entryTime % 100);
@@ -491,7 +518,7 @@ void displayActiveMembership(const parkingSystem &system) {
     cout << "\n\n========== ACTIVE MEMBERSHIP ================\n\n";
     for (int i = 0; i < system.activeMembershipCount; i++) {
         cout << "Member " << i + 1 << " ";
-        system.activeMembership[i].displayData();
+        system.activeMembership[i].displayDataMember();
         cout << endl;
     }
 
