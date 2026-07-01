@@ -24,42 +24,12 @@ struct carDetails {
     int parkingRow;
 
     int penaltyPoints = 0;
-
-    void getDataCar(ifstream &inCar) {
-        getline(inCar >> ws, plateNo, ';');
-        inCar >> entryTime;
-        inCar.ignore();
-        inCar >> parkingRow;
-        inCar.ignore();
-        inCar >> parkingColumn;
-        inCar.ignore();
-        inCar >> penaltyPoints;
-        inCar.ignore();
-    }
-
-    void displayDataCar() const {
-        cout << plateNo << endl;
-        cout << entryTime << endl;
-        cout << penaltyPoints << endl;
-    }
 };
 
 struct member {
     string plateNo;
     string ownerName;
     string memberLevel;
-
-    void getDataMember(ifstream &inMembers) {
-        getline(inMembers >> ws, plateNo, ';');
-        getline(inMembers >> ws, ownerName, ';');
-        getline(inMembers >> ws, memberLevel);
-    }
-
-    void displayDataMember() const {
-        cout << "plateNo: " << plateNo << " ";
-        cout << "ownerName: " << ownerName << " ";
-        cout << "memberLevel " << memberLevel << " ";
-    }
 };
 
 struct membershipDetails {
@@ -170,6 +140,7 @@ const membershipDetails membership[3] {
             cout << "\n\n =================================== \n\n";
             continue;
         }
+        cin.ignore();
 
         if (input == 8) {
             break;
@@ -190,6 +161,7 @@ const membershipDetails membership[3] {
             }
             case 4: {
                 int memberInput = getMembershipmanagementInput();
+                cin.ignore();
                 processMembershipManagementInput(system, memberInput);
                 break;
             }
@@ -231,14 +203,27 @@ const membershipDetails membership[3] {
         }*/
     }
 
-
 void inputCars(parkingSystem &system, ifstream &inCar) {
     //this while inputs the active car file into the active car array
     //and if input is successfull it returns true
     while (!inCar.eof()) {
-        system.activeCars[system.activeCarsCount].getDataCar(inCar);
+        getline(inCar, system.activeCars[system.activeCarsCount].plateNo, ';');
+        inCar >> system.activeCars[system.activeCarsCount].entryTime;
+        inCar.ignore();
+        inCar >> system.activeCars[system.activeCarsCount].parkingRow;
+        inCar.ignore();
+        inCar >> system.activeCars[system.activeCarsCount].parkingColumn;
+        inCar.ignore();
+        inCar >> system.activeCars[system.activeCarsCount].penaltyPoints;
+        inCar.ignore();
         system.activeCarsCount++;
-    }
+    }    
+}
+
+
+
+void inputMembers(parkingSystem &system, ifstream &inmember){
+
 }
 
 void assignActiveCarParkingLot(parkingSystem &system) {
@@ -265,7 +250,9 @@ bool assignParkingLot(carDetails &newCar, parkingSystem &system) {
 
 void assignMembership(parkingSystem &system, ifstream &inMembers) {
     while (!inMembers.eof()) {
-        system.activeMembership[system.activeMembershipCount].getDataMember(inMembers);
+        getline(inMembers, system.activeMembership[system.activeMembershipCount].plateNo, ';');
+        getline(inMembers, system.activeMembership[system.activeMembershipCount].ownerName, ';');
+        getline(inMembers, system.activeMembership[system.activeMembershipCount].memberLevel);;
         system.activeMembershipCount++;
     }
 }
@@ -292,10 +279,11 @@ void addVehicle(parkingSystem &system) {
     cout << "\n\n ============== CAR ENTRY ==================\n";
 
     cout << "Enter Plate No: ";
-    getline(cin >> ws, newCar.plateNo);
+    getline(cin, newCar.plateNo);
 
     cout << "Enter Entry Time: ";
     cin >> newCar.entryTime;
+    cin.ignore();
 
     bool isParked = assignParkingLot(newCar, system);
 
@@ -324,13 +312,19 @@ void removeFromParkingLot(string plateNo, parkingSystem &system) {
     }
 }
 
+void displayActiveMember(member activeMembers) {
+    cout << "plateNo: " << activeMembers.plateNo << " ";
+    cout << "ownerName: " << activeMembers.ownerName << " ";
+    cout << "memberLevel " << activeMembers.memberLevel << " ";
+}
+
 void removeVehicles(parkingSystem &system) {
     cout << "\n\n ============== CAR EXIT ==================\n";
 
 
     string exitVehiclePlate;
     cout << "No Plate To Remove: ";
-    getline(cin >> ws, exitVehiclePlate);
+    getline(cin, exitVehiclePlate);
 
     //getting the target index;
     int targetIndex = getIndexFromPlateNo(system, exitVehiclePlate);
@@ -372,7 +366,8 @@ void addExitedVehicles(parkingSystem &system, carDetails exitingCars) {
     int exitTime;
     cout << "Enter Exit Time for current vehicle: ";
     cin >> exitTime;
-    if (exitTime < system.exitedVehicles[system.exitedVehicleCount].entryTime) {
+    cin.ignore();
+    if (exitTime < exitingCars.entryTime) {
         cout << "Invalid exit time. please retry" << endl;
         return;
     }
@@ -390,7 +385,7 @@ void displayParkingLocation(const parkingSystem &system) {
 
     string plateNo;
     cout << "Enter the plate no of the vehicle you are looking for: ";
-    getline(cin >> ws, plateNo);
+    getline(cin, plateNo);
 
     int targetIndex = getIndexFromPlateNo(system, plateNo);
 
@@ -460,7 +455,7 @@ void addMember(parkingSystem &system) {
     
     //check noPlate is already registered and membership from the available membership
     cout << "Enter plateNo:";
-    getline(cin >> ws, plateNo);
+    getline(cin, plateNo);
     int memberIndex = searchActiveMembershipWithPlateNo(system, plateNo) ;
     if (memberIndex != -1) {
         cout << "Plate No already registered!\n\n\n" << endl;
@@ -474,7 +469,7 @@ void addMember(parkingSystem &system) {
     }
     
     cout << "Enter membershipLevel: ";
-    getline(cin >> ws, membershipLevel);
+    getline(cin, membershipLevel);
     if(!checkMembership(membershipLevel)) {
         cout << "Membership doesnt exist!\n\n\n" << endl;
         return;
@@ -483,7 +478,7 @@ void addMember(parkingSystem &system) {
     
 
     cout << "Enter Owner Name: ";
-    getline(cin >> ws, ownerName);
+    getline(cin, ownerName);
     
     system.activeMembership[system.activeMembershipCount].plateNo = plateNo; 
     system.activeMembership[system.activeMembershipCount].memberLevel = membershipLevel; 
@@ -518,7 +513,7 @@ void displayActiveMembership(const parkingSystem &system) {
     cout << "\n\n========== ACTIVE MEMBERSHIP ================\n\n";
     for (int i = 0; i < system.activeMembershipCount; i++) {
         cout << "Member " << i + 1 << " ";
-        system.activeMembership[i].displayDataMember();
+        displayActiveMember(system.activeMembership[i]);
         cout << endl;
     }
 
@@ -554,7 +549,7 @@ void removeMember(parkingSystem &system) {
 
     string plateNo;
     cout << "Enter Plate No: ";
-    getline(cin >> ws, plateNo);
+    getline(cin, plateNo);
 
     int targetIndex = searchActiveMembershipWithPlateNo(system, plateNo);
 

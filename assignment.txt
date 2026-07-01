@@ -28,10 +28,6 @@ carMembershipDetails {
     string ownerName;
 
     string memberLevel
-}
-
-membershipDetails {
-    string memberLevel
     double discountrate;
 }
 
