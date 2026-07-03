@@ -1,9 +1,0 @@
-
-
-============= ALL EXITED CARS ==================
-Plate Number   Entry Time     Exit Time      Overstayed Days   Total Fee      
-
-Total Exited Cars Today: 0
-
-==============================================================
-

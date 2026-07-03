@@ -89,6 +89,7 @@ void writeExitedVehicles(carDetails exitedVehicles[], int exitedVehiclesCount, o
 void writeActiveMembership(member activeMembership[], int activeMembershipCount, ofstream &out);
 void writeActiveCars(carDetails activeCars[], int activeCarsCount, ofstream &out);
 void rewriteActiveCars(parkingSystem &system);
+void rewriteActiveMembership(parkingSystem &system);
 
 //3 membership levels
 const membershipDetails membership[3] {
@@ -312,7 +313,7 @@ void displayParkingLocation(const parkingSystem &system) {
         return;
     }
 
-    cout << "Vehicle " << plateNo << " is parked at Row " << system.activeCars[targetIndex].parkingRow << " and column " << system.activeCars[targetIndex].parkingColumn << endl;
+    cout << "Vehicle " << plateNo << " is parked at Row " << system.activeCars[targetIndex].parkingRow + 1 << " and column " << system.activeCars[targetIndex].parkingColumn + 1<< endl;
 
     cout << "\n=============================================\n\n";
 }
@@ -343,8 +344,7 @@ void addVehicle(parkingSystem &system) {
         return;
     }
 
-    cout << "Found Parking at " 
-        << newCar.parkingRow << "," << newCar.parkingColumn << endl;
+    cout << "Found Parking at row " << newCar.parkingRow + 1<< " and column " << newCar.parkingColumn + 1  << endl;
 
     system.activeCars[system.activeCarsCount++] = newCar;
 
@@ -699,6 +699,7 @@ void displayExitedVehicles(carDetails exitedVehicles[], int exitedVehiclesCount)
 
     for (int i = 0; i < exitedVehiclesCount; i++) {
 
+        /*
         string entryTime;
         //entry hour
         if (exitedVehicles[i].entryTime / 100 < 10) {
@@ -723,11 +724,12 @@ void displayExitedVehicles(carDetails exitedVehicles[], int exitedVehiclesCount)
             exitTime += "0";
         }
         exitTime += to_string(exitedVehicles[i].exitTime % 100);
+        */
 
         cout << left
             << setw(15) << exitedVehicles[i].plateNo
-            << setw(15) << entryTime
-            << setw(15) << exitTime
+            << setw(15) << exitedVehicles[i].entryTime
+            << setw(15) << exitedVehicles[i].exitTime
             << setw(18) << exitedVehicles[i].penaltyPoints
             << fixed << setprecision(2)
             << setw(15) << exitedVehicles[i].finalFee
@@ -743,6 +745,7 @@ void displayAndWriteEndDayReport(parkingSystem &system,ofstream &outAllStatistic
     writeExitedVehicles(system.exitedVehicles, system.exitedVehicleCount, outExitedVehicle);
     writeActiveMembership(system.activeMembership, system.activeMembershipCount, outActiveMembers);
     rewriteActiveCars(system);
+    rewriteActiveMembership(system); 
 }
 void writeAllStatistics(parkingSystem &system,ofstream &out) {
     writeExitedVehicles(system.exitedVehicles, system.exitedVehicleCount, out);
@@ -764,7 +767,7 @@ void writeExitedVehicles(carDetails exitedVehicles[], int exitedVehiclesCount, o
          << endl;
 
     for (int i = 0; i < exitedVehiclesCount; i++) {
-
+        /*
         string entryTime;
         //entry hour
         if (exitedVehicles[i].entryTime / 100 < 10) {
@@ -789,11 +792,13 @@ void writeExitedVehicles(carDetails exitedVehicles[], int exitedVehiclesCount, o
             exitTime += "0";
         }
         exitTime += to_string(exitedVehicles[i].exitTime % 100);
+        */
+
 
         out << left
             << setw(15) << exitedVehicles[i].plateNo
-            << setw(15) << entryTime
-            << setw(15) << exitTime
+            << setw(15) << exitedVehicles[i].entryTime
+            << setw(15) << exitedVehicles[i].exitTime
             << setw(18) << exitedVehicles[i].penaltyPoints
             << fixed << setprecision(2)
             << setw(15) << exitedVehicles[i].finalFee
@@ -854,6 +859,23 @@ void rewriteActiveCars(parkingSystem &system) {
             << system.activeCars[i].parkingRow << ";"
             << system.activeCars[i].parkingColumn << ";"
             << system.activeCars[i].penaltyPoints;
+        
+        if (i < (system.activeCarsCount - 1)) {
+            out << "\n";
+        }
+        
+    }
+}
+
+void rewriteActiveMembership(parkingSystem &system) {
+     ofstream out("active membership.txt"); 
+
+    for (int i = 0; i < system.activeMembershipCount; i++) {
+
+        system.activeCars[i].penaltyPoints += 1;
+        out << system.activeMembership[i].plateNo << ";"
+            << system.activeMembership[i].ownerName << ";"
+            << system.activeMembership[i].memberLevel;
         
         if (i < (system.activeCarsCount - 1)) {
             out << "\n";
