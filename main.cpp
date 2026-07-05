@@ -16,6 +16,7 @@ struct carDetails {
     
     bool isMember = false;
     string memberLevel;
+    double membershipCost = 0;
     
     double parkingFee = 0;
     double finalFee = 0;
@@ -73,7 +74,7 @@ void addMember(parkingSystem &system);
 void displayMembershipDetails();
 void displayActiveMembership(const parkingSystem &system);
 bool checkMembership(string membershipLevel);
-void addMemberPriceToTotal(parkingSystem &system, string memberLevel, int targetIndex);
+void addMemberPrice(parkingSystem &system, string memberLevel, int targetIndex);
 void removeMember(parkingSystem &system);
 double calculateFinalFee(carDetails exitedCar);
 int searchActiveMembershipWithPlateNo(const parkingSystem &system, string plateNo);
@@ -90,6 +91,7 @@ void writeActiveMembership(member activeMembership[], int activeMembershipCount,
 void writeActiveCars(carDetails activeCars[], int activeCarsCount, ofstream &out);
 void rewriteActiveCars(parkingSystem &system);
 void rewriteActiveMembership(parkingSystem &system);
+void displayReceipt(carDetails car);
 
 //3 membership levels
 const membershipDetails membership[3] {
@@ -207,21 +209,6 @@ const membershipDetails membership[3] {
     
         }
 
-
-        /*
-        cout << "\n\nCURRENT EXITED CAR: \n\n";
-        cout << "number of exited vehicles: " << exitedVehicleCount << endl;
-        for (int i = 0; i < exitedVehicleCount; i++)  {
-            cout << exitedVehicles[i].plateNo << endl;
-            cout << exitedVehicles[i].entryTime<< endl;
-            cout << exitedVehicles[i].exitTime << endl;
-            cout << exitedVehicles[i].duration << endl;
-        }
-
-        cout << "\n\nCURRENT ACTIVE CAR\n\n";
-        for (int i = 0; i < activeCarsCount; i++) {
-            activeCars[i].displayData();
-        }*/
     }
 
 void inputCars(parkingSystem &system, ifstream &inCar) {
@@ -277,8 +264,8 @@ void assignMembershipToActiveCars(parkingSystem &system) {
         int memberIndex = searchActiveMembershipWithPlateNo(system, system.activeCars[i].plateNo);
         if (memberIndex != -1) {
             system.activeCars[i].isMember = true;
-            system.activeCars[i].memberLevel =
-                system.activeMembership[memberIndex].memberLevel;
+            system.activeCars[i].memberLevel = system.activeMembership[memberIndex].memberLevel;   
+            addMemberPrice(system, system.activeCars[i].memberLevel, i);  
         }
     }
 }
@@ -408,6 +395,7 @@ void removeVehicles(parkingSystem &system) {
     system.activeCarsCount--;
     cout << "Vehicle successfully exited" << endl;
 
+    displayReceipt(system.exitedVehicles[system.exitedVehicleCount - 1]);
     cout << "\n =============================================\n\n";
 
 }
@@ -428,11 +416,11 @@ void addExitedVehicles(parkingSystem &system, carDetails exitingCars, int exitTi
     system.exitedVehicles[system.exitedVehicleCount].entryTime = exitingCars.entryTime;
     system.exitedVehicles[system.exitedVehicleCount].exitTime = exitTime;
     system.exitedVehicles[system.exitedVehicleCount].duration = calculateDuration(exitingCars.entryTime, exitTime);
+    system.exitedVehicles[system.exitedVehicleCount].parkingFee = 2 * system.exitedVehicles[system.exitedVehicleCount].duration;
     system.exitedVehicles[system.exitedVehicleCount].memberLevel = exitingCars.memberLevel;
     system.exitedVehicles[system.exitedVehicleCount].isMember = exitingCars.isMember;
     system.exitedVehicles[system.exitedVehicleCount].penaltyPoints = exitingCars.penaltyPoints;
-    system.exitedVehicles[system.exitedVehicleCount].finalFee = exitingCars.finalFee; 
-    system.exitedVehicles[system.exitedVehicleCount].finalFee += calculateFinalFee(system.exitedVehicles[system.exitedVehicleCount]);
+    system.exitedVehicles[system.exitedVehicleCount].finalFee = calculateFinalFee(system.exitedVehicles[system.exitedVehicleCount]);
     system.exitedVehicleCount++;
 }
 
@@ -446,14 +434,10 @@ int calculateDuration(int entryTime, int exitTime){
 
 
 double calculateFinalFee(carDetails exitedCar) {
-    //get the hourly rates, 2 ringgit per hour
-    double fee = exitedCar.duration/60 * 2;
-
-    fee -= fee * getDiscountRate(exitedCar.memberLevel);
-
-    // 1 penalty point = 20 ringgit
-    fee += exitedCar.penaltyPoints * 20;
-    return fee;
+    double penaltyCost = exitedCar.penaltyPoints * 20;
+    double discount = getDiscountRate(exitedCar.memberLevel);
+    double total = exitedCar.parkingFee + exitedCar.membershipCost + penaltyCost;
+    return total * (1 - discount);
 }
 
 /// FLOWCHART ENDS HERRE ///
@@ -541,7 +525,7 @@ void addMember(parkingSystem &system) {
     system.activeMembershipCount++;
 
     //when adding member that means that a car is a new member and have to pay upfront. price will be added to the noPlate's total Cost
-    addMemberPriceToTotal(system, membershipLevel, targetIndex);
+    addMemberPrice(system, membershipLevel, targetIndex);
     system.activeCars[targetIndex].memberLevel = membershipLevel;
 
     cout<< "\n VEHICLE ADDED!\n";
@@ -591,7 +575,7 @@ bool checkMembership(string membershipLevel) {
     return false;
 }
 
-void addMemberPriceToTotal(parkingSystem &system, string memberLevel, int targetIndex) {
+void addMemberPrice(parkingSystem &system, string memberLevel, int targetIndex) {
     double price = 0;
     for (int i = 0; i < 3; i++) {
         if (membership[i].memberLevel == memberLevel) {
@@ -599,7 +583,7 @@ void addMemberPriceToTotal(parkingSystem &system, string memberLevel, int target
             break;
         }
     }
-    system.activeCars[targetIndex].finalFee += price;
+    system.activeCars[targetIndex].membershipCost = price;
 }
 void removeMember(parkingSystem &system) {
     cout << "\n\n============= MEMBERSHIP REMOVAL ==================\n";
@@ -658,10 +642,7 @@ void displayActiveCars(carDetails activeCars[], int activeCarsCount) {
 
     for (int i = 0; i < activeCarsCount; i++) {
         cout << left << setw(20) << activeCars[i].plateNo;
-        cout << setw(2) << setfill('0') << activeCars[i].entryTime / 100
-            << ":"
-            << setw(2) << setfill('0') << activeCars[i].entryTime % 100
-            << setfill(' ');    
+        cout << activeCars[i].entryTime;
         cout << endl;
     }
 
@@ -836,10 +817,7 @@ void writeActiveCars(carDetails activeCars[], int activeCarsCount, ofstream &out
 
     for (int i = 0; i < activeCarsCount; i++) {
         out << left << setw(20) << activeCars[i].plateNo;
-        out << setw(2) << setfill('0') << activeCars[i].entryTime / 100
-            << ":"
-            << setw(2) << setfill('0') << activeCars[i].entryTime % 100
-            << setfill(' ');    
+        out << activeCars[i].entryTime;
         out << endl;
     }
 
@@ -869,18 +847,13 @@ void rewriteActiveCars(parkingSystem &system) {
 
 void rewriteActiveMembership(parkingSystem &system) {
      ofstream out("active membership.txt"); 
-
     for (int i = 0; i < system.activeMembershipCount; i++) {
-
-        system.activeCars[i].penaltyPoints += 1;
         out << system.activeMembership[i].plateNo << ";"
             << system.activeMembership[i].ownerName << ";"
             << system.activeMembership[i].memberLevel;
-        
-        if (i < (system.activeCarsCount - 1)) {
+        if (i < (system.activeMembershipCount - 1)) {
             out << "\n";
         }
-        
     }
 }
 
@@ -895,3 +868,17 @@ double getDiscountRate(string memberLevel) {
     return 0;
 }
 
+void displayReceipt(carDetails car) {
+    cout << "\n\n============= RECEIPT ==================\n";
+
+    cout << setw(15) << "Plate Number: " << car.plateNo << endl;
+    cout << setw(15) << "Entry Time: " <<  car.entryTime << endl;
+    cout << setw(15) << "Exit Time: " <<  car.exitTime << endl;
+    cout << setw(15) << "Total Duration: " << car.duration << endl; 
+    cout << setw(15) << "Parking Fee: " << car.parkingFee << endl;
+    cout << setw(15) << "Membership Cost: " << car.membershipCost << endl;
+    cout << setw(15) << "Membership Discount: " << getDiscountRate(car.memberLevel) << endl; 
+    cout << setw(15) << "Penalty points: " << car.penaltyPoints << endl;
+    cout << setw(15) << "Penalty Cost: " << car.penaltyPoints * 20 << endl; 
+    cout << setw(15) << "Total Fee: " << car.finalFee << endl;
+}
