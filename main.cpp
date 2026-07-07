@@ -67,6 +67,7 @@ void addExitedCars(parkingSystem &system, carDetails exitingCars, int exitTime);
 void displayParkingLocation(const parkingSystem &system);
 int calculateDuration(int entryTime, int exitTime, int daysParked);
 
+//POINTER!!!!!!!!!!!!!!!!!!!!
 void getMembershipmanagementInput(int *memberInput);
 void processMembershipManagementInput(parkingSystem &system, int *memberInput);
 void addMember(parkingSystem &system);
@@ -177,10 +178,11 @@ const membershipDetails membership[3] {
                 break;
             }
             case 4: {
-                // POINTERRRRRR!!!!!!!!!!!!!!!!!
-                int memberInput = getMembershipmanagementInput();
+                //POINTER!!!!!!!!!!!!!!!!!!!!
+                int memberInput;
+                getMembershipmanagementInput(&memberInput);
                 cin.ignore();
-                processMembershipManagementInput(system, memberInput);
+                processMembershipManagementInput(system, &memberInput);
                 break;
             }
             case 5: {

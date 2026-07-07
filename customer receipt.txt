@@ -1,14 +1,14 @@
 
 
 ============= CUSTOMER RECEIPT ==================
-Plate Number:                 TUV777
-Entry Time:                   1100
-Exit Time:                    1800
-Total Duration:               420 minutes
-Parking Fee:                  RM14
+Plate Number:                 AIMAN123
+Entry Time:                   1200
+Exit Time:                    1500
+Total Duration:               180 minutes
+Parking Fee:                  RM6
 Membership Cost:              RM0
-Membership Discount:          10%
+Membership Discount:          0%
 Penalty Points:               0
 Penalty Cost:                 RM0
-Total Fee:                    RM12.6
+Total Fee:                    RM6
 ================================================
