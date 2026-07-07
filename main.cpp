@@ -1,7 +1,6 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
-#include <string>
 
 using namespace std;
 
@@ -68,8 +67,8 @@ void addExitedCars(parkingSystem &system, carDetails exitingCars, int exitTime);
 void displayParkingLocation(const parkingSystem &system);
 int calculateDuration(int entryTime, int exitTime, int daysParked);
 
-int getMembershipmanagementInput();
-void processMembershipManagementInput(parkingSystem &system, int memberInput);
+void getMembershipmanagementInput(int *memberInput);
+void processMembershipManagementInput(parkingSystem &system, int *memberInput);
 void addMember(parkingSystem &system);
 void displayMembershipDetails();
 void displayActiveMembership(const parkingSystem &system);
@@ -178,6 +177,7 @@ const membershipDetails membership[3] {
                 break;
             }
             case 4: {
+                // POINTERRRRRR!!!!!!!!!!!!!!!!!
                 int memberInput = getMembershipmanagementInput();
                 cin.ignore();
                 processMembershipManagementInput(system, memberInput);
@@ -456,7 +456,7 @@ double calculateFinalFee(carDetails exitedCar) {
 ////////////////////////////
 
 
-int getMembershipmanagementInput() {
+void getMembershipmanagementInput(int *memberInput) {
     cout << "\n============= MEMBERSHIP MANAGEMENT ===============\n\n";
     cout << "1. Add Member\n"
     << "2. Remove Member\n"
@@ -464,14 +464,12 @@ int getMembershipmanagementInput() {
     << "4. View Active Membership\n"
     << "5. Back";
     
-    int memberInput;
     cout << "\nPlease enter the number: ";
-    cin >> memberInput;
-    return memberInput;
-}   
+    cin >> *memberInput;
+}
 
-void processMembershipManagementInput(parkingSystem &system, int memberInput) {
-    switch (memberInput) {
+void processMembershipManagementInput(parkingSystem &system, int *memberInput) {
+    switch (*memberInput) {
         case 1: {
             addMember(system);
             break;

@@ -1,237 +1,383 @@
-# Parking System — Full Walkthrough (Sample Input & Expected Output)
+# Parking Management System - User Guide
 
-This walkthrough assumes the program starts with the provided `active car.txt`
-(33 pre-parked vehicles) and `active membership.txt` (22 pre-registered
-members). It exercises every menu option at least once, in an order that
-naturally sets up the data each later step needs.
-
-Type each **Input** exactly as shown, one line at a time, at the matching
-prompt. 
+This guide demonstrates how to use every feature of the Parking Management System, including normal operations and error handling scenarios.
 
 ---
 
-## Step 0 — Invalid main-menu input (error handling check)
+# Before Running
 
-| Prompt | Input |
-|---|---|
-| `Enter thee input` | `x` |
+Ensure the following files are in the same directory as the executable:
 
-**Expected:** `Invalid input` message, menu reprints. No state changes.
+* `active car.txt`
+* `active membership.txt`
 
----
+The program will automatically load:
 
-## Step 1 — View Parking Lot (baseline)
-
-| Prompt | Input |
-|---|---|
-| `Enter thee input` | `3` |
-
-**Expected:** 10×20 grid printed. Rows 1–6 show plates in columns 1–8 (per
-`active car.txt`); everything else is blank.
+* Active vehicles currently parked
+* Existing memberships
 
 ---
 
-## Step 2 — Vehicle Entry
-
-| Prompt | Input |
-|---|---|
-| `Enter thee input` | `1` |
-| `Enter Plate No:` | `NEW001` |
-| `Enter Entry Time:` | `2200` |
-
-**Expected:** `Found Parking at row 1 and column 9` (first open slot — row 0
-columns 0–7 are already full, so it lands at row index 0, column index 8).
-`activeCarsCount` becomes 34.
-
----
-
-## Step 3 — Search Vehicle Location
-
-| Prompt | Input |
-|---|---|
-| `Enter thee input` | `5` |
-| `Enter Plate No:` | `NEW001` |
-
-**Expected:** `Vehicle NEW001 is parked at Row 1 and column 9` (confirms Step 2).
-
----
-
-## Step 4 — Membership Management → Add Member
-
-| Prompt | Input |
-|---|---|
-| `Enter thee input` | `4` |
-| `Please enter the number:` | `1` |
-| `Enter plateNo:` | `PAS909` |
-| `Enter membershipLevel:` | `GOLD` |
-| `Enter Owner Name:` | `Test Owner` |
-
-**Expected:** `VEHICLE ADDED!`. `PAS909` (already parked, previously not a
-member) is now GOLD, `activeMembershipCount` becomes 23.
-
----
-
-## Step 5 — Membership Management → View Active Membership
-
-| Prompt | Input |
-|---|---|
-| `Enter thee input` | `4` |
-| `Please enter the number:` | `4` |
-
-**Expected:** List of 23 members, including the new `PAS909 / Test Owner /
-GOLD` entry at the bottom.
-
----
-
-## Step 6 — Membership Management → View Membership Details
-
-| Prompt | Input |
-|---|---|
-| `Enter thee input` | `4` |
-| `Please enter the number:` | `3` |
-
-**Expected:** Static table of GOLD (20, 0.05), PLANTIUM (27, 0.10), DIAMOND
-(35, 0.15).
-
----
-
-## Step 7 — Membership Management → Remove Member
-
-| Prompt | Input |
-|---|---|
-| `Enter thee input` | `4` |
-| `Please enter the number:` | `2` |
-| `Enter Plate No:` | `PAS909` |
-
-**Expected:** `Member removed successfully!`. `activeMembershipCount` back to
-22. `PAS909`'s `isMember` flag is cleared.
-
-> ⚠️ **Known gap to note in your report:** `removeMember()` clears
-> `isMember` and `memberLevel` but does **not** reset `membershipCost` back
-> to 0. If `PAS909` exits later in the same session, its old GOLD price
-> (20) will still be added into `calculateFinalFee`, even though it's no
-> longer a member. Step 9 below deliberately demonstrates this.
-
----
-
-## Step 8 — Vehicle Exit (existing GOLD member)
-
-| Prompt | Input |
-|---|---|
-| `Enter thee input` | `2` |
-| `No Plate To Remove:` | `ABC123` |
-| `Enter Exit Time for current vehicle:` | `1015` |
-
-**Expected calculation** (assuming the `membershipCost` fix from this
-session is applied — see note above the file section):
-- Duration: 08:15 → 10:15 = 120 minutes
-- Parking fee: 2 × 120 = 240
-- Membership cost (GOLD): 20
-- Penalty cost: 8 × 20 = 160
-- Subtotal: 240 + 20 + 160 = 420
-- GOLD discount 5%: 420 × 0.95 = **420.00 → 399.00 final fee**
-
-Receipt should print these numbers; `activeCarsCount` drops to 33.
-
----
-
-## Step 9 — Vehicle Exit (former member — demonstrates the leftover-cost gap)
-
-| Prompt | Input |
-|---|---|
-| `Enter thee input` | `2` |
-| `No Plate To Remove:` | `PAS909` |
-| `Enter Exit Time for current vehicle:` | `2300` |
-
-**Expected calculation:**
-- Duration: 19:00 → 23:00 = 240 minutes
-- Parking fee: 2 × 240 = 480
-- Membership cost: **20** (leftover from Step 4/7 — the gap noted above; a
-  fully-patched version would show 0 here)
-- Penalty cost: 8 × 20 = 160
-- Discount: 0% (not a member anymore)
-- **Final fee: 480 + 20 + 160 = 660.00**
-
-`activeCarsCount` drops to 32.
-
----
-
-## Step 10 — Current Statistics
-
-| Prompt | Input |
-|---|---|
-| `Enter thee input` | `6` |
-
-**Expected:** Prints, in order — parking lot grid, active cars (32), active
-membership (22 — note `ABC123` is still listed even though it exited; member
-records aren't cleaned up on exit, a second minor gap worth mentioning if
-your report covers data-consistency), exited vehicles (2: `ABC123`,
-`PAS909`, with the fees from Steps 8–9).
-
----
-
-## Step 11 — End Day and Generate Report
-
-| Prompt | Input |
-|---|---|
-| `Enter thee input` | `7` |
-
-**Expected:** Console prints `Generating End of Day Report...`, then writes:
-- `All Statistics Report.txt`
-- `Exited Vehicle Report.txt`
-- `Active Members Report.txt`
-- Rewrites `active car.txt` (remaining 32 cars, each with penalty points +1)
-- Rewrites `active membership.txt` (remaining 22 members)
-
-The program then **exits immediately** (`return 1`) — option `8` is never
-reached in this walkthrough because option `7` already terminates the
-program.
-
----
-
-## Raw input sequence (for piping, e.g. `./program < inputs.txt`)
+# Main Menu
 
 ```
-x
-3
-1
-NEW001
-2200
-5
-NEW001
-4
-1
-PAS909
-GOLD
-Test Owner
-4
-4
-4
-3
-4
-2
-PAS909
-2
-ABC123
-1015
-2
-PAS909
-2300
-6
-7
+1. Vehicle Entry
+2. Car Exit
+3. View Parking Lot
+4. Membership Management
+5. Search Vehicle Location
+6. Current Statistics
+7. End Day and Generate Report
+8. Exit Program
 ```
 
 ---
 
-## Summary of what this run demonstrates
+# 1. Vehicle Entry
 
-| Menu Option | Exercised in Step(s) |
-|---|---|
-| 1. Vehicle Entry | 2 |
-| 2. Vehicle Exit | 8, 9 |
-| 3. View Parking Lot | 1 |
-| 4. Membership Management (all 4 sub-options) | 4, 5, 6, 7 |
-| 5. Search Vehicle Location | 3 |
-| 6. Current Statistics | 10 |
-| 7. End Day Report | 11 |
-| Invalid input handling | 0 |
+Adds a new vehicle into the parking lot.
+
+### Example
+
+```
+Plate Number:
+ABC1234
+
+Entry Time:
+1330
+```
+
+The system will:
+
+* Check if the vehicle already exists
+* Assign the first available parking space
+* Detect whether the vehicle is already a registered member
+* Add the vehicle into the active parking list
+
+---
+
+## Test Case 1 – Normal Entry
+
+**Steps**
+
+1. Select **Vehicle Entry**
+2. Enter a new plate number
+3. Enter a valid entry time
+
+**Expected Result**
+
+* Vehicle is parked successfully.
+* Parking location is displayed.
+
+---
+
+## Test Case 2 – Duplicate Vehicle
+
+**Steps**
+
+1. Add vehicle `ABC1234`
+2. Try adding `ABC1234` again
+
+**Expected Result**
+
+```
+Car already exists in the parking lot.
+```
+
+---
+
+## Test Case 3 – Returning Member
+
+**Steps**
+
+1. Register a vehicle as a member.
+2. Exit the vehicle.
+3. Enter the same vehicle again.
+
+**Expected Result**
+
+The system automatically recognises the vehicle as an existing member without requiring another registration.
+
+---
+
+# 2. Car Exit
+
+Removes a vehicle from the parking lot and generates a receipt.
+
+---
+
+## Test Case 1 – Normal Exit
+
+**Steps**
+
+1. Select **Car Exit**
+2. Enter an existing plate number
+3. Enter a valid exit time
+
+**Expected Result**
+
+* Parking fee calculated
+* Membership discount applied (if applicable)
+* Receipt displayed
+* Receipt saved as `customer receipt.txt`
+
+---
+
+## Test Case 2 – Vehicle Does Not Exist
+
+**Steps**
+
+Attempt to remove a vehicle that is not parked.
+
+**Expected Result**
+
+```
+Wrong plate no, please retry
+```
+
+---
+
+## Test Case 3 – Invalid Exit Time
+
+**Steps**
+
+Entry Time
+
+```
+1500
+```
+
+Exit Time
+
+```
+1300
+```
+
+(with no penalty days)
+
+**Expected Result**
+
+```
+Invalid exit time. Please retry.
+```
+
+---
+
+# 3. View Parking Lot
+
+Displays the entire parking layout.
+
+You can verify:
+
+* Empty parking spaces
+* Occupied parking spaces
+* Vehicle locations
+
+---
+
+# 4. Membership Management
+
+```
+1. Add Member
+2. Remove Member
+3. View Membership Details
+4. View Active Membership
+5. Back
+```
+
+---
+
+# Add Member
+
+Registers a parked vehicle as a member.
+
+---
+
+## Test Case 1 – Normal Registration
+
+**Steps**
+
+1. Park a new vehicle.
+2. Open Membership Management.
+3. Select Add Member.
+4. Enter:
+
+* Plate Number
+* Membership Level
+* Owner Name
+
+**Expected Result**
+
+Vehicle becomes a member immediately.
+
+---
+
+## Test Case 2 – Register Existing Member
+
+Attempt to register the same vehicle twice.
+
+**Expected Result**
+
+```
+Plate No already registered!
+```
+
+---
+
+## Test Case 3 – Register Vehicle Not Parked
+
+Attempt to register a vehicle that is not inside the parking lot.
+
+**Expected Result**
+
+```
+Plate No isn't in the parking lot!
+```
+
+---
+
+## Test Case 4 – Invalid Membership Level
+
+Example
+
+```
+SILVER
+```
+
+**Expected Result**
+
+```
+Membership doesn't exist!
+```
+
+---
+
+# Remove Member
+
+Removes an existing membership.
+
+---
+
+## Test Case 1 – Normal Removal
+
+Select a registered member.
+
+**Expected Result**
+
+```
+Member removed successfully!
+```
+
+---
+
+## Test Case 2 – Remove Non-Existing Member
+
+Enter an unknown plate number.
+
+**Expected Result**
+
+```
+Plate No doesn't exist!
+```
+
+---
+
+# Membership Persistence Test
+
+This demonstrates that membership information is stored permanently.
+
+## Steps
+
+1. Add vehicle `ABC1234`
+2. Register `ABC1234` as a GOLD member
+3. Exit the vehicle
+4. Enter `ABC1234` again
+5. Exit the vehicle again
+
+**Expected Result**
+
+The second receipt automatically includes the GOLD membership discount without registering again.
+
+---
+
+# 5. Search Vehicle Location
+
+Search for a parked vehicle using its plate number.
+
+---
+
+## Test Case 1 – Existing Vehicle
+
+Enter a parked vehicle.
+
+**Expected Result**
+
+Displays:
+
+* Row
+* Column
+
+---
+
+## Test Case 2 – Vehicle Not Found
+
+Enter a plate number that is not parked.
+
+**Expected Result**
+
+```
+Car not found in the parking lot.
+```
+
+---
+
+# 6. Current Statistics
+
+Displays:
+
+* Current parking lot
+* Active vehicles
+* Active members
+* Vehicles exited today
+
+Use this feature to verify that previous operations have updated the system correctly.
+
+---
+
+# 7. End Day and Generate Report
+
+Generates all report files.
+
+Created files:
+
+* `All Statistics Report.txt`
+* `Active Members Report.txt`
+* `Exited Car Report.txt`
+* `customer receipt.txt`
+
+The system also updates:
+
+* `active car.txt`
+* `active membership.txt`
+
+This preserves the latest parking and membership information for the next execution.
+
+---
+
+# Recommended Demonstration Flow
+
+For a complete demonstration of the system:
+
+1. Add a new vehicle.
+2. Try adding the same vehicle again (duplicate validation).
+3. Register the vehicle as a GOLD member.
+4. Try registering it again (duplicate membership validation).
+5. View Active Membership.
+6. Search for the vehicle location.
+7. Exit the vehicle and verify the receipt.
+8. Try exiting the same vehicle again (vehicle not found validation).
+9. Re-enter the same vehicle and verify it is automatically recognised as a member.
+10. View Current Statistics.
+11. Generate the End-of-Day Report.
+
+This sequence demonstrates all major functionalities, data persistence, and error-handling capabilities of the Parking Management System.
