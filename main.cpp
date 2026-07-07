@@ -45,8 +45,9 @@ struct parkingSystem {
     carDetails activeCars[200];
     int activeCarsCount = 0;
 
-    carDetails exitedCars[200];
+    carDetails *exitedCars;
     int exitedCarCount = 0;
+    int exitedCarCapacity;
 
     member activeMembership[200];
     int activeMembershipCount = 0;
@@ -64,6 +65,7 @@ void removeFromParkingLot(string plateNo, parkingSystem &system);
 void removeCars(parkingSystem &system);
 int getIndexFromPlateNo(const parkingSystem &system, string plateNo);
 void addExitedCars(parkingSystem &system, carDetails exitingCars, int exitTime);
+void resizeExitedCars(parkingSystem &system);
 void displayParkingLocation(const parkingSystem &system);
 int calculateDuration(int entryTime, int exitTime, int daysParked);
 
@@ -102,117 +104,123 @@ const membershipDetails membership[3] {
 };
 
 
-    int main() {
-    ifstream inCar("active car.txt");
-    ifstream inMembers("active membership.txt");
-    if (!inCar) {
-        cout << "Error reading \"active car.txt\"";
-        return 1;
+int main() {
+ifstream inCar("active car.txt");
+ifstream inMembers("active membership.txt");
+if (!inCar) {
+    cout << "Error reading \"active car.txt\"";
+    return 1;
+}
+if (!inMembers) {
+    cout << "Erro reading \"active membership.txt\"";
+    return 1;
+}
+
+ofstream outAllStatistics("All Statistics Report.txt");
+ofstream outActiveMembers("Active Members Report.txt");
+ofstream outExitedCar("Exited Car Report.txt");
+
+parkingSystem system;
+
+//set the dynamic array size to 10, and it will double in size when it hit max capacity
+system.exitedCarCapacity = 10;
+system.exitedCars = new carDetails[system.exitedCarCapacity];
+
+// at program initialization, parking lot will be empty. then will be filled with active cars and new cars and so on
+for (int i = 0; i < 10; i++) {
+    for (int j = 0; j < 20; j++) {
+        system.parkingLot[i][j] = "";
     }
-    if (!inMembers) {
-        cout << "Erro reading \"active membership.txt\"";
-        return 1;
-    }
-    
-    ofstream outAllStatistics("All Statistics Report.txt");
-    ofstream outActiveMembers("Active Members Report.txt");
-    ofstream outExitedCar("Exited Car Report.txt");
+}
 
-    parkingSystem system;
+//input the active car from file into active car array inside system
+assignCars(system, inCar);
+//fill the parking lot with active cars / cars that have been here before program initialization
+assignActiveCarParkingLot(system);
+//input the active membership from file into active membership array inside system
+assignMembership(system, inMembers);
+assignMembershipToActiveCars(system);
 
-    // at program initialization, parking lot will be empty. then will be filled with active cars and new cars and so on
-    for (int i = 0; i < 10; i++) {
-        for (int j = 0; j < 20; j++) {
-            system.parkingLot[i][j] = "";
-        }
-    }
+while(true) {
+    cout << "Car Ticketing Menu, Please input the number as below\n";
+    cout << "1. Vechicle Entry\n"
+        << "2. Car Exit\n"
+        << "3. View Parking Lot\n"
+        << "4. Membership Management\n"
+        << "5. Search Vechicle Location in Parking Lot\n"
+        << "6. Current Statistics\n"
+        << "7. End Day and Generate Report\n"
+        << "8. Exit Program\n";
 
-    //input the active car from file into active car array inside system
-    assignCars(system, inCar);
-    //fill the parking lot with active cars / cars that have been here before program initialization
-    assignActiveCarParkingLot(system);
-    //input the active membership from file into active membership array inside system
-    assignMembership(system, inMembers);
-    assignMembershipToActiveCars(system);
+    int input;
+    cout << "Enter Selection Number (1-8): ";
 
-    while(true) {
-        cout << "Car Ticketing Menu, Please input the number as below\n";
-        cout << "1. Vechicle Entry\n"
-            << "2. Car Exit\n"
-            << "3. View Parking Lot\n"
-            << "4. Membership Management\n"
-            << "5. Search Vechicle Location in Parking Lot\n"
-            << "6. Current Statistics\n"
-            << "7. End Day and Generate Report\n"
-            << "8. Exit Program\n";
-
-        int input;
-        cout << "Enter Selection Number (1-8): ";
-
-        //edge case for string input
-        if (!(cin >> input)) {
-            cout << "\nInvalid input" << endl;
-            cin.clear();
-            cin.ignore();
-
-            cout << "\n\n =================================== \n\n";
-            continue;
-        }
+    //edge case for string input
+    if (!(cin >> input)) {
+        cout << "\nInvalid input" << endl;
+        cin.clear();
         cin.ignore();
 
-        if (input == 8) {
+        cout << "\n\n =================================== \n\n";
+        continue;
+    }
+    cin.ignore();
+
+    if (input == 8) {
+        break;
+    }
+
+    switch (input) {
+        case 1: {
+            addCar(system);
             break;
         }
-
-        switch (input) {
-            case 1: {
-                addCar(system);
-                break;
-            }
-            case 2: {
-                removeCars(system);
-                break;
-            }
-            case 3: {
-                displayparkingLot(system);
-                break;
-            }
-            case 4: {
-                //POINTER!!!!!!!!!!!!!!!!!!!!
-                int memberInput;
-                getMembershipmanagementInput(&memberInput);
-                cin.ignore();
-                processMembershipManagementInput(system, &memberInput);
-                break;
-            }
-            case 5: {
-                displayParkingLocation(system);
-                break;
-            }
-            case 6: {
-                displayCurrentStatistics(system);
-                break;
-            }
-            case 7: {
-                //End Day and Generate Report
-                //reuse current statistics
-                //display all current statistics, write the current statistics and exit to main
-                cout << "\nGenerating End of Day Report...\n";
-                inCar.close();
-                displayAndWriteEndDayReport(system, outAllStatistics, outActiveMembers, outExitedCar);
-                return 1;
-            }
-            default: {
-                cout << "Invalid option.\n";
-                cout << "\n\n =================================== \n\n";
-                break;
-            }
+        case 2: {
+            removeCars(system);
+            break;
         }
-        
+        case 3: {
+            displayparkingLot(system);
+            break;
+        }
+        case 4: {
+            //POINTER!!!!!!!!!!!!!!!!!!!!
+            int memberInput;
+            getMembershipmanagementInput(&memberInput);
+            cin.ignore();
+            processMembershipManagementInput(system, &memberInput);
+            break;
+        }
+        case 5: {
+            displayParkingLocation(system);
+            break;
+        }
+        case 6: {
+            displayCurrentStatistics(system);
+            break;
+        }
+        case 7: {
+            //End Day and Generate Report
+            //reuse current statistics
+            //display all current statistics, write the current statistics and exit to main
+            cout << "\nGenerating End of Day Report...\n";
+            inCar.close();
+            displayAndWriteEndDayReport(system, outAllStatistics, outActiveMembers, outExitedCar);
+            return 1;
+        }
+        default: {
+            cout << "Invalid option.\n";
+            cout << "\n\n =================================== \n\n";
+            break;
+        }
+    }
     
-        }
 
     }
+    //deaclloacte dynamic array
+    delete[] system.exitedCars;
+
+}
 
 void assignCars(parkingSystem &system, ifstream &inCar) {
     //this while inputs the active car file into the active car array
@@ -421,7 +429,28 @@ int getIndexFromPlateNo(const parkingSystem &system, string plateNo) {
 }
 
 
+void resizeExitedCars(parkingSystem &system) {
+    //doubles the capacity of the dynamic exitedCars array, copies the old kinda like vector, but manual
+    int newCapacity = system.exitedCarCapacity * 2;
+    carDetails *newArray = new carDetails[newCapacity];
+
+    //copy the old  array into new array. new array will have the old values, plus the same amount of empty value
+    for (int i = 0; i < system.exitedCarCount; i++) {
+        newArray[i] = system.exitedCars[i];
+    }
+
+    //deallocate the dynamic array, then copy the newly sized array. newArray will be deleted when exiting function but the system.exitedCars updates the main /  referenced value.
+    delete[] system.exitedCars;
+    system.exitedCars = newArray;
+    system.exitedCarCapacity = newCapacity;
+}
+
 void addExitedCars(parkingSystem &system, carDetails exitingCars, int exitTime) {
+
+    //if total exited car = exited car capacity, grow the array to be double.
+    if (system.exitedCarCount == system.exitedCarCapacity) {
+        resizeExitedCars(system);
+    }
 
     system.exitedCars[system.exitedCarCount].plateNo = exitingCars.plateNo;
     system.exitedCars[system.exitedCarCount].entryTime = exitingCars.entryTime;
@@ -451,12 +480,6 @@ double calculateFinalFee(carDetails exitedCar) {
     double total = exitedCar.parkingFee + exitedCar.membershipCost + penaltyCost;
     return total * (1 - discount);
 }
-
-/// FLOWCHART ENDS HERRE ///
-////////////////////////////
-////////////////////////////
-////////////////////////////
-
 
 void getMembershipmanagementInput(int *memberInput) {
     cout << "\n============= MEMBERSHIP MANAGEMENT ===============\n\n";
