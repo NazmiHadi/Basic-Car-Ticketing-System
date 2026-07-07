@@ -53,7 +53,7 @@ struct parkingSystem {
 };
 
 
-void inputCars(parkingSystem &system, ifstream &inCar);
+void assignCars(parkingSystem &system, ifstream &inCar);
 void assignActiveCarParkingLot(parkingSystem &system);
 bool assignParkingLot(carDetails &newCar, parkingSystem &system);
 void assignMembership(parkingSystem &system, ifstream &inMembers);
@@ -128,7 +128,7 @@ const membershipDetails membership[3] {
     }
 
     //input the active car from file into active car array inside system
-    inputCars(system, inCar);
+    assignCars(system, inCar);
     //fill the parking lot with active cars / cars that have been here before program initialization
     assignActiveCarParkingLot(system);
     //input the active membership from file into active membership array inside system
@@ -147,7 +147,7 @@ const membershipDetails membership[3] {
             << "8. Exit Program\n";
 
         int input;
-        cout << "Enter Selection Number (1-8) ";
+        cout << "Enter Selection Number (1-8): ";
 
         //edge case for string input
         if (!(cin >> input)) {
@@ -214,7 +214,7 @@ const membershipDetails membership[3] {
 
     }
 
-void inputCars(parkingSystem &system, ifstream &inCar) {
+void assignCars(parkingSystem &system, ifstream &inCar) {
     //this while inputs the active car file into the active car array
     //and if input is successfull it returns true
     while (!inCar.eof()) {
@@ -561,14 +561,23 @@ void displayMembershipDetails(){
 }
 
 void displayActiveMembership(const parkingSystem &system) {
-    cout << "\n\n========== ACTIVE MEMBERSHIP ================\n\n";
+    cout << "\n\n============= CURRENT ACTIVE MEMBERSHIP ==================\n";
+    cout << left 
+        << setw(30) <<  "Plate Number"
+        << setw(30) << "Owner Name"
+        << setw(20) << "Membership Level"
+        << endl;
+
     for (int i = 0; i < system.activeMembershipCount; i++) {
-        cout << "Member " << i + 1 << " ";
-        displayActiveMember(system.activeMembership[i]);
-        cout << endl;
+        cout << left 
+            << setw(30) << system.activeMembership[i].plateNo
+            << setw(30) << system.activeMembership[i].ownerName
+            << setw(20) << system.activeMembership[i].memberLevel
+            << endl;
     }
 
-    cout << "\n==================================\n\n";
+    cout << "Total Active Membership: " << system.activeMembershipCount << "\n\n";
+    cout << "\n==============================================================\n\n";
 
 }
 
