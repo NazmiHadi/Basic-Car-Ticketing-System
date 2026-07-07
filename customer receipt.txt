@@ -1,0 +1,14 @@
+
+
+============= CUSTOMER RECEIPT ==================
+Plate Number:                 TUV777
+Entry Time:                   1100
+Exit Time:                    1800
+Total Duration:               420 minutes
+Parking Fee:                  RM14
+Membership Cost:              RM0
+Membership Discount:          10%
+Penalty Points:               0
+Penalty Cost:                 RM0
+Total Fee:                    RM12.6
+================================================
